@@ -1,0 +1,14 @@
+# .NET build artifacts
+bin/
+obj/
+*.user
+
+# IDE
+.vs/
+
+# Claude Code local settings (machine-specific permissions)
+.claude/settings.local.json
+
+# Dados de teste gerados (regeneráveis via apps/LayoutValidator.GeradorDados,
+# seed fixa = mesmo conteúdo sempre; ~210MB, não cabe num push normal do GitHub)
+dados-teste/*.csv
