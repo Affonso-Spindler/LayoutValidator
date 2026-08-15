@@ -9,6 +9,7 @@ obj/
 # Claude Code local settings (machine-specific permissions)
 .claude/settings.local.json
 
-# Dados de teste gerados (regeneráveis via apps/LayoutValidator.GeradorDados,
-# seed fixa = mesmo conteúdo sempre; ~210MB, não cabe num push normal do GitHub)
-dados-teste/*.csv
+# Saída do gerador de dados de teste — inteiramente recriável via
+# apps/LayoutValidator.GeradorDados (seed fixa = mesmo conteúdo sempre).
+# O CSV de 1M linhas tem ~210MB e não cabe num push normal do GitHub.
+dados-teste/

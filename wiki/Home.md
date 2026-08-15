@@ -28,7 +28,7 @@ tests/LayoutValidator.Tests/             testes xUnit do motor de validação
 apps/LayoutValidator.LayoutFuncionario/  layout de referência maior — "Funcionário" (22 campos)
 apps/LayoutValidator.GeradorDados/       gera arquivo CSV de teste com erros diversos
 apps/LayoutValidator.TesteApp/           app WinForms pra validar qualquer .csv/.txt na mão
-dados-teste/                             arquivo de 1M linhas gerado + resumo do que foi injetado
+dados-teste/                             saída do gerador (não versionado; recriável a qualquer momento)
 wiki/                                    você está aqui
 ```
 

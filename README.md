@@ -172,7 +172,7 @@ LayoutValidator.sln
   apps/LayoutValidator.LayoutFuncionario/  layout de referência maior (22 campos), compartilhado pelos apps abaixo
   apps/LayoutValidator.GeradorDados/       console app: gera CSV de teste com erros diversos injetados
   apps/LayoutValidator.TesteApp/           WinForms: seleciona um arquivo e mostra o resultado da validação
-  dados-teste/                             arquivo grande gerado (1M linhas) + resumo_geracao.txt
+  dados-teste/                             saída do gerador (não versionado — ver .gitignore)
   wiki/                                    guia de uso, como criar layouts, possibilidades futuras
 ```
 

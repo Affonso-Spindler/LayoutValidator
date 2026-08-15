@@ -1,7 +1,0 @@
-Arquivo: funcionarios_1000000.csv
-Total de linhas: 1000000
-Válidas: 849937
-Com 1 erro: 120100
-Com 2 erros: 24960
-Estruturais (colunas faltando): 5003
-Total de registros esperados como inválidos: 150063
