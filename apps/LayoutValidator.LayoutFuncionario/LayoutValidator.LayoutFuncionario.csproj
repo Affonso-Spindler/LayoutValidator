@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\LayoutValidator\LayoutValidator.csproj" />
+    <ProjectReference Include="..\..\src\LayoutValidator.Regras\LayoutValidator.Regras.csproj" />
   </ItemGroup>
 
   <ItemGroup>

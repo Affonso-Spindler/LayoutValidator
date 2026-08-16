@@ -25,6 +25,8 @@ Esta biblioteca existe para pegar isso antes, de forma reutilizável entre proje
 - Validação de regras via **FluentValidation** (não `DataAnnotations`).
 - Mapeamento `TRaw -> T` é **manual** por layout (sem geração automática via
   reflection nessa v1).
+- Regras comuns (CPF, data, UF, moeda...) ficam num **pacote separado e opcional**,
+  `LayoutValidator.Regras` — ver "Catálogo de regras" abaixo.
 - Nomes de classes/métodos/propriedades em **pt-BR**, exceto papéis técnicos de
   infraestrutura (`Raw`, `Mapper`, `Engine`, `Writer`) que ficam em inglês — ver
   "Convenção de nomenclatura" abaixo.
@@ -71,6 +73,44 @@ Por isso cada layout tem **três peças**:
 Isso mantém "declaro as regras perto do layout", só que a declaração migra de atributos
 no Model final para uma classe de validator ao lado do Raw Model. Ganha de brinde:
 regras cross-field, mensagens customizadas e reuso de validators entre layouts.
+
+## Catálogo de regras: por que fora do core
+
+`src/LayoutValidator.Regras` é um pacote à parte que referencia **só o FluentValidation** —
+não referencia o core. Isso é deliberado: o core é a ferramenta genérica (motor + contratos),
+empacotável sozinha, e regras como "CPF tem dígito verificador" são vocabulário de domínio,
+não infraestrutura de leitura de arquivo.
+
+O mecanismo é **extension method sobre `IRuleBuilder<T, string>`** — a única forma aberta por
+natureza: não há interface a implementar, classe a herdar nem registro em DI. Que o pacote de
+regras não precise do core é justamente a prova disso: **qualquer projeto consumidor escreve
+as próprias regras exatamente do mesmo jeito**, e elas aparecem no `RuleFor` lado a lado com
+as do catálogo. O passo a passo está em
+[Regras Reutilizáveis](wiki/Regras-Reutilizaveis.md#criando-a-sua-própria-biblioteca-de-regras).
+
+Cada regra é uma casca fina sobre um **predicado puro** (`bool`, sem FluentValidation) que
+vive em `Predicados/` e pode ser usado fora de validação — num `Mapper`, por exemplo. Todo
+predicado é **total**: nunca lança exceção. Isso não é preciosismo — numa engine de streaming,
+exceção dentro de uma regra não reprova a linha, ela aborta a leitura do arquivo inteiro.
+
+Duas convenções do catálogo mudam como o validador é escrito:
+
+- **Regra de formato não reprova valor vazio.** `Obrigatorio()` é a única que reclama de
+  campo em branco, então campo opcional é só não declarar obrigatório — some o
+  `Must(valor => string.IsNullOrEmpty(valor) || ...)` repetido.
+- **`RuleLevelCascadeMode = CascadeMode.Stop` em cada validador de layout.** O default do
+  FluentValidation é `Continue`, então encadear `.Inteiro().InteiroEntre(1, 60)` num valor
+  `"abc"` produziria dois erros pra mesma célula — duas linhas no relatório e contagem
+  dobrada no `ErrosPorRegra`. `Stop` no nível de regra para dentro de um campo e segue nos
+  demais.
+
+```csharp
+RuleLevelCascadeMode = CascadeMode.Stop;
+
+RuleFor(f => f.Cpf).Obrigatorio().Cpf();
+RuleFor(f => f.Uf).Obrigatorio().Uf();
+RuleFor(f => f.DataDemissao).Data();   // opcional: vazio passa
+```
 
 ## Arquitetura de streaming
 
@@ -143,7 +183,7 @@ services.AddSingleton<ILayoutMapper<PessoaRaw, Pessoa>, PessoaMapper>();
 services.AddScoped<IValidadorLayout<Pessoa>, PessoaValidadorLayout>();
 ```
 
-Ver [`ExtensoesColecaoServicos.cs`](samples/LayoutValidator.Sample/ExtensoesColecaoServicos.cs)
+Ver [`ServiceCollectionExtensions.cs`](samples/LayoutValidator.Sample/ServiceCollectionExtensions.cs)
 no sample.
 
 ## Estrutura do projeto
@@ -159,16 +199,26 @@ LayoutValidator.sln
     Core/ILayoutMapper.cs
     Reporting/ErrorReportWriter.cs         escreve o relatório de erros linha a linha
     Reporting/LinhaRelatorioErro.cs
+  src/LayoutValidator.Regras/              catálogo de regras (net8.0, só FluentValidation)
+    Predicados/Formatos.cs                 data, inteiro, decimal, moeda — bool puro
+    Predicados/Documentos.cs               CPF, CNPJ, CNH, PIS/PASEP, Luhn — bool puro
+    Predicados/UnidadesFederativas.cs      as 27 siglas
+    ConstrutorRegra.cs                     aplica o contrato "formato não reprova vazio"
+    Comuns/*Extensions.cs                  texto, numéricas, data, financeiras, contato
+    Brasil/RegrasBrasilExtensions.cs       Cpf, Cnpj, Cep, Uf, Telefone, Cnh, PisPasep
   samples/LayoutValidator.Sample/          console app demonstrando o layout "Pessoa"
     Models/PessoaRaw.cs / Pessoa.cs / PessoaValidador.cs / PessoaMapper.cs / PessoaValidadorLayout.cs
-    ExtensoesColecaoServicos.cs            registro no DI
-    dados_exemplo.csv                      CSV de exemplo (válidos + 4 tipos de erro)
+    ServiceCollectionExtensions.cs         registro no DI
+    dados_exemplo.csv                      CSV de exemplo (válidos + 5 tipos de erro)
     Program.cs
-  tests/LayoutValidator.Tests/             xUnit
-    Modelos/                               layout de teste isolado do sample
+  tests/LayoutValidator.Tests/             xUnit do motor
+    Modelos/                               layout de teste isolado do sample e do catálogo de regras
     Fixtures/*.csv                         valido, invalido_inteiro, invalido_data, linhas_malformadas
     LayoutValidationEngineTestes.cs
     ResumoValidacaoLayoutTestes.cs
+  tests/LayoutValidator.Regras.Tests/      xUnit do catálogo
+    Predicados/                            vetores de teste dos predicados puros
+    Extensions/                            contrato de vazio, códigos de erro, CascadeMode
   apps/LayoutValidator.LayoutFuncionario/  layout de referência maior (22 campos), compartilhado pelos apps abaixo
   apps/LayoutValidator.GeradorDados/       console app: gera CSV de teste com erros diversos injetados
   apps/LayoutValidator.TesteApp/           WinForms: seleciona um arquivo e mostra o resultado da validação
@@ -182,7 +232,8 @@ LayoutValidator.sln
    o cabeçalho do CSV (o CsvHelper casa por nome, case-insensitive, sem atributo
    nenhum sendo necessário no caso comum).
 2. Criar `XxxValidador : AbstractValidator<XxxRaw>` com as regras de formato,
-   obrigatoriedade, etc.
+   obrigatoriedade, etc. — usando o [catálogo de regras](wiki/Regras-Reutilizaveis.md)
+   e declarando `RuleLevelCascadeMode = CascadeMode.Stop` no construtor.
 3. Criar `Xxx` — o Model final já tipado.
 4. Criar `XxxMapper : ILayoutMapper<XxxRaw, Xxx>` convertendo os campos.
 5. Criar `XxxValidadorLayout : IValidadorLayout<Xxx>` compondo os três acima com o
@@ -197,7 +248,7 @@ referência completo desse padrão.
 ## Rodando
 
 ```bash
-dotnet test tests/LayoutValidator.Tests/LayoutValidator.Tests.csproj
+dotnet test LayoutValidator.sln
 dotnet run --project samples/LayoutValidator.Sample/LayoutValidator.Sample.csproj
 ```
 

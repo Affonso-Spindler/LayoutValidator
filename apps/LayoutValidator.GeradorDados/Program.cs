@@ -137,11 +137,16 @@ void CorromperCampo(string[] campos)
     {
         "MatriculaId" => "ABC123",
         "Nome" => "",
-        "Cpf" => aleatorio.Next(0, 2) == 0 ? "123456789" : "12345678900X",
+        "Cpf" => aleatorio.Next(0, 3) switch
+        {
+            0 => "123456789",                                  // curto demais
+            1 => "12345678900X",                               // tem letra
+            _ => CorromperUltimoDigito(campos[indice])         // 11 dígitos, dígito verificador errado
+        },
         "Rg" => "12",
         "DataNascimento" => "31/02/2000",
         "Email" => "sem-arroba-nem-ponto",
-        "Telefone" => "11987654321",
+        "Telefone" => "(11) 9876-543",
         "Cargo" => "",
         "Departamento" => "",
         "Salario" => aleatorio.Next(0, 2) == 0 ? "cincomil" : "5000.00",
@@ -159,7 +164,39 @@ void CorromperCampo(string[] campos)
     };
 }
 
-string GerarCpf() => string.Concat(Enumerable.Range(0, 11).Select(_ => aleatorio.Next(0, 10).ToString(CultureInfo.InvariantCulture)));
+// CPF precisa sair com dígito verificador correto: a validação confere o módulo 11, então
+// 11 dígitos sorteados soltos seriam reprovados em ~99% das linhas.
+string GerarCpf()
+{
+    var digitos = new int[11];
+
+    do
+    {
+        for (var i = 0; i < 9; i++)
+            digitos[i] = aleatorio.Next(0, 10);
+    }
+    while (digitos.Take(9).Distinct().Count() == 1);  // "00000000000" e afins são recusados como documento
+
+    digitos[9] = DigitoVerificadorCpf(digitos, 9, 10);
+    digitos[10] = DigitoVerificadorCpf(digitos, 10, 11);
+
+    return string.Concat(digitos);
+}
+
+int DigitoVerificadorCpf(int[] digitos, int quantidade, int pesoInicial)
+{
+    var soma = 0;
+    for (int i = 0, peso = pesoInicial; i < quantidade; i++, peso--)
+        soma += digitos[i] * peso;
+
+    var resto = soma % 11;
+    return resto < 2 ? 0 : 11 - resto;
+}
+
+/// Mantém o formato e quebra só o dígito verificador — o tipo de erro que a validação
+/// por módulo 11 pega e uma checagem de "11 dígitos" deixaria passar.
+string CorromperUltimoDigito(string valor) =>
+    valor.Length == 0 ? "0" : valor[..^1] + (char)('0' + (((valor[^1] - '0' + 1) % 10 + 10) % 10));
 
 string DataAleatoria(int anoInicio, int anoFim)
 {

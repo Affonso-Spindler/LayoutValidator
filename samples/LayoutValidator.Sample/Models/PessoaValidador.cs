@@ -1,5 +1,5 @@
-using System.Globalization;
 using FluentValidation;
+using LayoutValidator.Regras;
 
 namespace LayoutValidator.Sample.Models;
 
@@ -7,29 +7,16 @@ public sealed class PessoaValidador : AbstractValidator<PessoaRaw>
 {
     public PessoaValidador()
     {
-        RuleFor(p => p.Nome)
-            .NotEmpty()
-            .WithErrorCode("NomeObrigatorio")
-            .WithMessage("Nome é obrigatório.");
+        // Um erro por campo: sem isso, encadear duas regras no mesmo campo reportaria o
+        // mesmo problema duas vezes no relatório e no ResumoValidacaoLayout.
+        RuleLevelCascadeMode = CascadeMode.Stop;
 
-        RuleFor(p => p.Idade)
-            .Must(SerInteiroValido)
-            .WithErrorCode("IdadeDeveSerInteiro")
-            .WithMessage("Idade deve ser um número inteiro.");
+        RuleFor(p => p.Nome).Obrigatorio();
 
-        RuleFor(p => p.DataNascimento)
-            .Must(SerDataValida)
-            .WithErrorCode("DataNascimentoFormatoInvalido")
-            .WithMessage("Data de nascimento deve estar no formato dd/MM/yyyy.");
+        RuleFor(p => p.Idade).Obrigatorio().Inteiro();
 
-        RuleFor(p => p.Cpf)
-            .Matches(@"^\d{11}$")
-            .WithErrorCode("CpfFormatoInvalido")
-            .WithMessage("CPF deve conter exatamente 11 dígitos numéricos.");
+        RuleFor(p => p.DataNascimento).Obrigatorio().Data();
+
+        RuleFor(p => p.Cpf).Obrigatorio().Cpf();
     }
-
-    private static bool SerInteiroValido(string valor) => int.TryParse(valor, out _);
-
-    private static bool SerDataValida(string valor) =>
-        DateTime.TryParseExact(valor, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out _);
 }

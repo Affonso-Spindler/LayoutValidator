@@ -16,6 +16,8 @@ Esta wiki é focada em **como usar e como estender** no dia a dia.
   ler o resultado, como rodar o app de teste e o gerador de dados.
 - [Criando Layouts](Criando-Layouts.md) — passo a passo pra declarar um layout novo,
   do zero, com exemplo completo.
+- [Regras Reutilizáveis](Regras-Reutilizaveis.md) — o catálogo de regras prontas (CPF, data,
+  UF, moeda...) e como escrever as suas próprias.
 - [Possibilidades](Possibilidades.md) — o que a lib não faz hoje e caminhos possíveis
   pra evoluir.
 
@@ -23,8 +25,10 @@ Esta wiki é focada em **como usar e como estender** no dia a dia.
 
 ```
 src/LayoutValidator/                     a biblioteca em si (o que você referencia no seu projeto)
+src/LayoutValidator.Regras/              catálogo opcional de regras prontas (CPF, data, UF...)
 samples/LayoutValidator.Sample/          exemplo mínimo — layout "Pessoa" (4 campos)
 tests/LayoutValidator.Tests/             testes xUnit do motor de validação
+tests/LayoutValidator.Regras.Tests/      testes xUnit do catálogo de regras
 apps/LayoutValidator.LayoutFuncionario/  layout de referência maior — "Funcionário" (22 campos)
 apps/LayoutValidator.GeradorDados/       gera arquivo CSV de teste com erros diversos
 apps/LayoutValidator.TesteApp/           app WinForms pra validar qualquer .csv/.txt na mão

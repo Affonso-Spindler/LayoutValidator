@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace LayoutValidator.Sample;
 
-public static class ExtensoesColecaoServicos
+public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AdicionarValidadorLayoutPessoa(this IServiceCollection servicos)
     {

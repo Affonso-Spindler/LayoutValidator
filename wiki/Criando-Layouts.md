@@ -29,51 +29,54 @@ Ver o README na raiz pra mais detalhes desse porquê.
 ## 2. `ProdutoValidador` — as regras
 
 ```csharp
+using FluentValidation;
+using LayoutValidator.Regras;
+
 public sealed class ProdutoValidador : AbstractValidator<ProdutoRaw>
 {
     public ProdutoValidador()
     {
+        RuleLevelCascadeMode = CascadeMode.Stop;
+
         RuleFor(p => p.Codigo)
-            .Matches(@"^[A-Z]{3}\d{4}$")
-            .WithErrorCode("CodigoFormatoInvalido")
-            .WithMessage("Código deve seguir o padrão AAA0000.");
+            .Obrigatorio()
+            .Formato(@"^[A-Z]{3}\d{4}$", "CodigoFormatoInvalido", "'{PropertyName}' deve seguir o padrão AAA0000.");
 
-        RuleFor(p => p.Descricao)
-            .NotEmpty()
-            .WithErrorCode("DescricaoObrigatoria")
-            .WithMessage("Descrição é obrigatória.");
+        RuleFor(p => p.Descricao).Obrigatorio();
 
-        RuleFor(p => p.Preco)
-            .Must(SerDecimalPositivo)
-            .WithErrorCode("PrecoFormatoInvalido")
-            .WithMessage("Preço deve ser um número decimal positivo (formato 0,00).");
+        RuleFor(p => p.Preco).Obrigatorio().DecimalPositivo();
 
-        RuleFor(p => p.EstoqueMinimo)
-            .Must(valor => int.TryParse(valor, out var n) && n >= 0)
-            .WithErrorCode("EstoqueMinimoDeveSerInteiroNaoNegativo")
-            .WithMessage("Estoque mínimo deve ser um inteiro maior ou igual a zero.");
+        RuleFor(p => p.EstoqueMinimo).Obrigatorio().InteiroNaoNegativo();
     }
-
-    private static bool SerDecimalPositivo(string valor) =>
-        decimal.TryParse(valor.Replace(',', '.'), NumberStyles.Number, CultureInfo.InvariantCulture, out var n) && n > 0;
 }
 ```
 
-Padrões úteis do FluentValidation pra esse tipo de regra:
+As regras vêm do pacote [`LayoutValidator.Regras`](Regras-Reutilizaveis.md) — só adicionar
+a `ProjectReference` e o `using LayoutValidator.Regras`. Não precisa reescrever regex de CPF
+nem `TryParse` de data em cada layout; o catálogo completo está na
+[página de regras reutilizáveis](Regras-Reutilizaveis.md), junto de como escrever as suas
+próprias quando o catálogo não cobrir.
 
-| Regra                              | Como escrever                                  |
-|-------------------------------------|-------------------------------------------------|
-| Obrigatório                         | `.NotEmpty()`                                    |
-| Formato fixo (CPF, CEP, código)     | `.Matches(@"regex")`                             |
-| Conversão seria segura (int, data)  | `.Must(valor => TipoQualquer.TryParse(valor, ...))` |
-| Intervalo numérico                  | `.Must(valor => n is >= min and <= max)`         |
-| Campo opcional                      | `.Must(valor => string.IsNullOrEmpty(valor) || ...)` |
-| Regra entre campos (cross-field)    | `RuleFor(x => x).Must(raw => ...)` no objeto inteiro |
+Duas convenções do catálogo que valem repetir aqui, porque mudam como você escreve o
+validador:
 
-Sempre usa `.WithErrorCode("NomeCurtoNoStilo PascalCase")` — é esse valor que vira
-`NomeRegra` no `ErroValidacaoLayout` e que o `ResumoValidacaoLayout` agrupa em
-`ErrosPorRegra`. Sem `WithErrorCode`, o motor cai pra `WithMessage` como chave, o que
-funciona mas fica menos estável se você mudar o texto da mensagem depois.
+**`Obrigatorio()` é a única regra que reprova campo vazio.** Todas as outras deixam vazio
+passar, então campo opcional é só não declarar obrigatório:
+
+```csharp
+RuleFor(p => p.DataDescontinuacao).Data();               // opcional
+RuleFor(p => p.DataCadastro).Obrigatorio().Data();       // obrigatório
+```
+
+**`RuleLevelCascadeMode = CascadeMode.Stop` no construtor.** Sem isso, encadear duas regras
+no mesmo campo faz as duas rodarem mesmo depois de uma falhar, e uma célula ruim vira dois
+erros — duas linhas no relatório e contagem dobrada no `ErrosPorRegra`. O porquê detalhado
+está [na página de regras](Regras-Reutilizaveis.md#2-um-erro-por-campo-declare-o-cascademode).
+
+Se precisar de uma regra que o catálogo não tem e não vale generalizar, `Formato(regex,
+codigo, mensagem)` é a saída — como no `Codigo` acima. O código de erro que você passar é o
+que vira `NomeRegra` no `ErroValidacaoLayout` e o que o `ResumoValidacaoLayout` agrupa em
+`ErrosPorRegra`, então escolha um nome estável.
 
 ## 3. `Produto` — o Model final
 
