@@ -17,6 +17,8 @@ Esta biblioteca existe para pegar isso antes, de forma reutilizável entre proje
 ## Decisões de escopo (v1)
 
 - Só arquivos **delimitados** (CSV, pipe, etc.) — sem layout posicional/largura fixa.
+- Delimitador padrão é **`;`**, e o formato do arquivo (delimitador + tratamento da primeira
+  linha) é declarado **no layout** — ver "Formato do arquivo" abaixo.
 - **Encoding fora de escopo** por enquanto (maioria dos arquivos é UTF-8).
 - Linha com qualquer erro é **descartada** do conjunto de válidos — só aparece no
   relatório de erros, com o valor raw original.
@@ -73,6 +75,55 @@ Por isso cada layout tem **três peças**:
 Isso mantém "declaro as regras perto do layout", só que a declaração migra de atributos
 no Model final para uma classe de validator ao lado do Raw Model. Ganha de brinde:
 regras cross-field, mensagens customizadas e reuso de validators entre layouts.
+
+## Formato do arquivo: declarado no layout
+
+Delimitador e tratamento da primeira linha são características **do arquivo que aquele layout
+descreve**, iguais à lista de colunas. Ficam em `OpcoesLayout`, declarada na fachada do
+layout — quem consome só chama `Validar(leitor)`, sem parâmetro de formato.
+
+```csharp
+public sealed class ProdutoValidadorLayout : ValidadorLayoutBase<ProdutoRaw, Produto>
+{
+    public ProdutoValidadorLayout(IValidator<ProdutoRaw> validador, ILayoutMapper<ProdutoRaw, Produto> mapper)
+        : base(validador, mapper) { }
+
+    protected override OpcoesLayout Opcoes { get; } = new()
+    {
+        Delimitador = "|",
+        Cabecalho = ModoCabecalho.Ausente
+    };
+}
+```
+
+**O padrão é `;`** porque arquivo brasileiro usa vírgula como separador decimal: com vírgula
+delimitadora, todo campo de valor (`1234,56`) colide e o arquivo precisa vir com aspas. O
+próprio gerador de dados de teste quebrou por isso durante o desenvolvimento.
+
+**`ModoCabecalho` tem três estados, não um booleano**, porque "tem cabeçalho" e "ignorar a
+primeira linha" são coisas diferentes — a primeira decide se as colunas casam por nome ou por
+posição, a segunda só descarta uma linha:
+
+| Modo | 1ª linha vira registro? | Colunas casam por |
+|---|---|---|
+| `Presente` (padrão) | não | nome |
+| `Ausente` | sim, é dado | posição |
+| `PresenteIgnorado` | não | posição |
+
+Nos modos posicionais a **ordem de declaração das propriedades do Raw Model é o contrato**, e
+a falha é silenciosa: trocar duas de lugar não gera erro, só põe os dados nos campos errados.
+`[Index(n)]` do CsvHelper serve pra tornar isso explícito quando valer a pena.
+
+**Não existe detecção automática de delimitador** de propósito: se o layout é o contrato do
+formato, a ferramenta adivinhar contradiz isso — e adivinhar errado num arquivo de milhões de
+linhas produz um resultado plausível e errado, que é pior que uma falha. Arquivo com
+delimitador diferente do declarado para na primeira iteração com `LayoutIncompativelException`,
+citando o cabeçalho lido e o delimitador esperado.
+
+`ValidadorLayoutBase<TRaw, T>` existe porque a fachada de todo layout era o mesmo cerimonial
+— dois campos, um construtor que só atribui, um `Validar` que repassa. `IValidadorLayout<T>`
+continua sendo a interface pública injetada pelo código de negócio; herdar da base é
+conveniência, não obrigação.
 
 ## Catálogo de regras: por que fora do core
 
@@ -169,9 +220,10 @@ interno de como aquele layout é parseado/validado.
 
 - **`IValidadorLayout<T>`** — interface pública (`Validar(TextReader) -> IEnumerable<ResultadoValidacaoRegistro<T>>`).
   É isso que código de negócio injeta via construtor.
-- **`XxxValidadorLayout : IValidadorLayout<Xxx>`** — uma classe concreta por layout,
-  compõe `IValidator<XxxRaw>` + `ILayoutMapper<XxxRaw,Xxx>` e chama o
-  `LayoutValidationEngine` genérico por dentro. `TRaw` nunca vaza pra fora dessa classe.
+- **`XxxValidadorLayout : ValidadorLayoutBase<XxxRaw, Xxx>`** — uma classe concreta por
+  layout, que herda a composição de `IValidator<XxxRaw>` + `ILayoutMapper<XxxRaw,Xxx>` e a
+  chamada do `LayoutValidationEngine`, e declara o formato do arquivo em `Opcoes`. `TRaw`
+  nunca vaza pra fora dessa classe.
 - **Registro no DI**: os `AbstractValidator<T>` entram via scan automático do
   FluentValidation (`services.AddValidatorsFromAssemblyContaining<XxxValidador>()`);
   mapper e `IValidadorLayout<T>` são registrados explicitamente por layout, porque não
@@ -195,6 +247,10 @@ LayoutValidator.sln
     Core/ErroValidacaoLayout.cs
     Core/ResumoValidacaoLayout.cs
     Core/LayoutValidationEngine.cs         engine de streaming (Validar<TRaw,T>)
+    Core/OpcoesLayout.cs                   formato do arquivo (delimitador ';' + cabeçalho)
+    Core/ModoCabecalho.cs                  Presente / Ausente / PresenteIgnorado
+    Core/ValidadorLayoutBase.cs            base das fachadas de layout
+    Core/LayoutIncompativelException.cs    delimitador não bate: falha rápida
     Core/IValidadorLayout.cs
     Core/ILayoutMapper.cs
     Reporting/ErrorReportWriter.cs         escreve o relatório de erros linha a linha
@@ -236,8 +292,8 @@ LayoutValidator.sln
    e declarando `RuleLevelCascadeMode = CascadeMode.Stop` no construtor.
 3. Criar `Xxx` — o Model final já tipado.
 4. Criar `XxxMapper : ILayoutMapper<XxxRaw, Xxx>` convertendo os campos.
-5. Criar `XxxValidadorLayout : IValidadorLayout<Xxx>` compondo os três acima com o
-   `LayoutValidationEngine.Validar`.
+5. Criar `XxxValidadorLayout : ValidadorLayoutBase<XxxRaw, Xxx>` — só o construtor, mais o
+   `Opcoes` se o arquivo não for `;` com cabeçalho.
 6. Registrar no DI: `AddValidatorsFromAssemblyContaining<XxxValidador>()` +
    `AddSingleton<ILayoutMapper<XxxRaw,Xxx>, XxxMapper>()` +
    `AddScoped<IValidadorLayout<Xxx>, XxxValidadorLayout>()`.

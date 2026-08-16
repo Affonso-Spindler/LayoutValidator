@@ -1,24 +1,14 @@
-using System.Globalization;
-using CsvHelper.Configuration;
 using FluentValidation;
 using LayoutValidator.Core;
 
 namespace LayoutValidator.LayoutFuncionario;
 
-public sealed class FuncionarioValidadorLayout : IValidadorLayout<Funcionario>
+public sealed class FuncionarioValidadorLayout : ValidadorLayoutBase<FuncionarioRaw, Funcionario>
 {
-    private readonly IValidator<FuncionarioRaw> _validador;
-    private readonly ILayoutMapper<FuncionarioRaw, Funcionario> _mapper;
-
     public FuncionarioValidadorLayout(IValidator<FuncionarioRaw> validador, ILayoutMapper<FuncionarioRaw, Funcionario> mapper)
+        : base(validador, mapper)
     {
-        _validador = validador;
-        _mapper = mapper;
     }
 
-    public IEnumerable<ResultadoValidacaoRegistro<Funcionario>> Validar(TextReader leitor)
-    {
-        var configuracaoCsv = new CsvConfiguration(CultureInfo.InvariantCulture);
-        return LayoutValidationEngine.Validar(leitor, configuracaoCsv, _validador, _mapper);
-    }
+    // Sem sobrescrever Opcoes: o arquivo deste layout é o padrão — delimitador ';' com cabeçalho.
 }

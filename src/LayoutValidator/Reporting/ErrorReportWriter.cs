@@ -17,7 +17,10 @@ public sealed class ErrorReportWriter : IDisposable
 
     public ErrorReportWriter(TextWriter writer, CsvConfiguration? configuracaoCsv = null)
     {
-        _csv = new CsvWriter(writer, configuracaoCsv ?? new CsvConfiguration(CultureInfo.InvariantCulture));
+        // Mesmo delimitador padrão da leitura: como o relatório carrega o ValorRaw da célula
+        // que falhou, e valor brasileiro tem vírgula decimal, ';' evita aspas em quase toda
+        // linha e o Excel pt-BR abre já colunado.
+        _csv = new CsvWriter(writer, configuracaoCsv ?? new OpcoesLayout().ParaConfiguracaoCsv());
     }
 
     public int TotalErrorsWritten { get; private set; }

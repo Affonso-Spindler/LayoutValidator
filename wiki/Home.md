@@ -18,6 +18,11 @@ Esta wiki é focada em **como usar e como estender** no dia a dia.
   do zero, com exemplo completo.
 - [Regras Reutilizáveis](Regras-Reutilizaveis.md) — o catálogo de regras prontas (CPF, data,
   UF, moeda...) e como escrever as suas próprias.
+
+O delimitador padrão é **`;`** (arquivo brasileiro usa vírgula como separador decimal, então
+vírgula delimitadora colidiria com todo campo de valor). Delimitador e tratamento da primeira
+linha são declarados no próprio layout — ver
+[Declarando o formato do arquivo](Criando-Layouts.md#declarando-o-formato-do-arquivo).
 - [Possibilidades](Possibilidades.md) — o que a lib não faz hoje e caminhos possíveis
   pra evoluir.
 

@@ -36,7 +36,7 @@ var totalEstruturais = 0;
 
 using (var escritor = new StreamWriter(caminhoSaida, append: false))
 {
-    escritor.WriteLine(string.Join(',', cabecalho));
+    escritor.WriteLine(string.Join(';', cabecalho));
 
     for (var i = 1; i <= quantidadeLinhas; i++)
     {
@@ -60,12 +60,12 @@ using (var escritor = new StreamWriter(caminhoSaida, append: false))
         }
         else
         {
-            escritor.WriteLine(string.Join(',', campos.Take(aleatorio.Next(5, 20)).Select(EscaparCampoCsv)));
+            escritor.WriteLine(string.Join(';', campos.Take(aleatorio.Next(5, 20)).Select(EscaparCampoCsv)));
             totalEstruturais++;
             continue;
         }
 
-        escritor.WriteLine(string.Join(',', campos.Select(EscaparCampoCsv)));
+        escritor.WriteLine(string.Join(';', campos.Select(EscaparCampoCsv)));
     }
 }
 
@@ -208,9 +208,12 @@ string DataAleatoria(int anoInicio, int anoFim)
 
 T Escolher<T>(T[] itens) => itens[aleatorio.Next(itens.Length)];
 
+// Com ';' como delimitador, campo de valor brasileiro ("1234,56") deixa de colidir e não
+// precisa mais de aspas — o escape sobra pros casos de verdade: ';' no meio do texto, aspas
+// e quebra de linha.
 string EscaparCampoCsv(string campo)
 {
-    if (campo.IndexOfAny(new[] { ',', '"', '\n', '\r' }) < 0)
+    if (campo.IndexOfAny(new[] { ';', '"', '\n', '\r' }) < 0)
         return campo;
 
     return "\"" + campo.Replace("\"", "\"\"") + "\"";

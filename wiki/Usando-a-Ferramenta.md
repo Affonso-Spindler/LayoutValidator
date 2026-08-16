@@ -27,11 +27,11 @@ Se seu projeto não usa injeção de dependência, dá pra chamar a engine diret
 
 ```csharp
 using var leitor = new StreamReader("arquivo.csv");
-var configuracaoCsv = new CsvConfiguration(CultureInfo.InvariantCulture);
+var opcoes = new OpcoesLayout();   // delimitador ';' com cabeçalho
 var validador = new PessoaValidador();
 var mapper = new PessoaMapper();
 
-foreach (var resultado in LayoutValidationEngine.Validar(leitor, configuracaoCsv, validador, mapper))
+foreach (var resultado in LayoutValidationEngine.Validar(leitor, opcoes, validador, mapper))
 {
     switch (resultado)
     {
@@ -44,6 +44,12 @@ foreach (var resultado in LayoutValidationEngine.Validar(leitor, configuracaoCsv
     }
 }
 ```
+
+O formato do arquivo (delimitador e tratamento da primeira linha) é declarado **no layout**,
+não aqui — ver [Declarando o formato do arquivo](Criando-Layouts.md#declarando-o-formato-do-arquivo).
+O padrão é `;` com cabeçalho. Se o arquivo vier com outro delimitador, a leitura para na
+primeira iteração com `LayoutIncompativelException` dizendo o que foi lido e o que era
+esperado.
 
 ## 4. Validar um arquivo — com DI
 
