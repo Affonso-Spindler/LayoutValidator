@@ -107,3 +107,6 @@ correspondente no Trello.
 
 Consequência de escopo: isso amplia a decisão de escopo v1 ("só arquivos delimitados")
 do README, então precisaria ser revisitada junto.
+
+Plano detalhado, com as alternativas de implementação pesadas uma contra a outra, em
+[ADR-0001](../docs/adr/0001-validar-retorno-de-consulta.md).
