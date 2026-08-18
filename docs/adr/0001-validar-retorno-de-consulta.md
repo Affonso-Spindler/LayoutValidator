@@ -22,7 +22,7 @@ Card de acompanhamento: https://trello.com/c/5dTQ1ncV
 ## Decisão
 
 `LayoutValidationEngine.Validar` ganhou dois overloads novos que aceitam dados já em
-memória, sem arquivo, sem `OpcoesLayout` e sem exigir uma fachada de layout
+memória, sem arquivo e sem exigir uma fachada de layout
 (`XxxValidadorLayout : ValidadorLayoutBase<TRaw,T>`):
 
 ```csharp
@@ -33,10 +33,11 @@ public static IEnumerable<ResultadoValidacaoRegistro<T>> Validar<TRaw, T>(
     ILayoutMapper<TRaw, T> mapper)
     where TRaw : class, new()
 
-// Linhas já num texto delimitado por linha — quem chama escolhe o separador, casamento posicional.
+// Linhas já num texto delimitado por linha — usa o mesmo OpcoesLayout.Delimitador de
+// uma eventual fachada de arquivo do layout; Cabecalho é ignorado, é sempre posicional.
 public static IEnumerable<ResultadoValidacaoRegistro<T>> Validar<TRaw, T>(
     IEnumerable<string> linhas,
-    string delimitador,
+    OpcoesLayout opcoes,
     IValidator<TRaw> validador,
     ILayoutMapper<TRaw, T> mapper)
     where TRaw : class, new()
@@ -49,6 +50,14 @@ com nenhum tipo de dado tipado.** Quem chama extrai os valores de onde quiser
 Os dois overloads são sempre **posicionais** — não existe conceito de cabeçalho aqui, a
 ordem dos valores tem que bater com a ordem de declaração das propriedades `string` do
 Raw Model (mesma convenção que `ModoCabecalho.Ausente` já usa no caminho de arquivo).
+
+O delimitador **não** é um parâmetro solto: o overload de linha delimitada recebe o
+mesmo `OpcoesLayout` que uma fachada de arquivo do layout já declara, e lê só o
+`Delimitador` dali — `Cabecalho` é ignorado (este caminho não tem cabeçalho de jeito
+nenhum, mesmo que `OpcoesLayout` diga `Presente`). Isso evita duplicar o valor do
+delimitador em dois lugares (e os dois caminhos saírem de sincronia) sem reintroduzir
+a exigência de uma fachada completa — `OpcoesLayout` é só um objeto de configuração,
+não a classe `XxxValidadorLayout`.
 
 Uso completo em [Usando a Ferramenta § 6](../../wiki/Usando-a-Ferramenta.md#6-validando-dados-que-já-estão-em-memória-sem-arquivo).
 
@@ -87,10 +96,10 @@ separados, ou uma linha já delimitada).
   `Validador`/`Mapper` que um layout de arquivo já usa — desde que os valores cheguem
   formatados do jeito que eles esperam.
 - **Responsabilidade explícita de quem chama**: formatar cada valor tipado (data,
-  decimal) como texto antes de montar a linha, e — no overload de string delimitada —
-  manter o `delimitador` passado consistente com o `OpcoesLayout.Delimitador` de uma
-  eventual fachada do mesmo layout usada pro caminho de arquivo, já que não há vínculo
-  automático entre os dois.
+  decimal) como texto antes de montar a linha. O delimitador em si não precisa mais
+  dessa atenção manual — o overload de string delimitada reusa o mesmo `OpcoesLayout`
+  de uma eventual fachada de arquivo do layout, então os dois caminhos ficam
+  consistentes sem esforço extra.
 - **Sem mudança de escopo do formato de arquivo**: o caminho `Validar(TextReader, ...)`
   não mudou de comportamento observável — só teve o loop de validação+mapeamento
   extraído internamente pra reuso (`ValidarLinha`), coberto pelos testes já existentes.

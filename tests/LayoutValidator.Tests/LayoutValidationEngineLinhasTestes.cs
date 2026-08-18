@@ -6,9 +6,11 @@ namespace LayoutValidator.Tests;
 
 /// <summary>
 /// Cobre os dois overloads de <see cref="LayoutValidationEngine.Validar"/> que não passam por
-/// arquivo — dados já em memória (ex.: retorno de consulta), sem cabeçalho, sem
-/// <see cref="OpcoesLayout"/> e sem fachada de layout. Nenhum teste aqui depende de banco: os
-/// dados são construídos direto em cada `[Fact]`, o mesmo padrão inline já usado por
+/// arquivo — dados já em memória (ex.: retorno de consulta), sempre posicionais (sem
+/// cabeçalho) e sem fachada de layout. O overload de linha delimitada ainda usa
+/// <see cref="OpcoesLayout"/> — só pra reusar o mesmo <c>Delimitador</c> de uma eventual fachada
+/// de arquivo do mesmo layout; <c>Cabecalho</c> é ignorado. Nenhum teste aqui depende de banco:
+/// os dados são construídos direto em cada `[Fact]`, o mesmo padrão inline já usado por
 /// `Validar_ArquivoVazio_NaoRetornaNadaENaoQuebra` em <see cref="LayoutValidationEngineTestes"/>.
 /// </summary>
 public class LayoutValidationEngineLinhasTestes
@@ -79,20 +81,37 @@ public class LayoutValidationEngineLinhasTestes
     {
         var linhas = new[] { "Maria;30;01/01/1994" };
 
-        var resultados = LayoutValidationEngine.Validar(linhas, ";", Validador, Mapper).ToList();
+        var resultados = LayoutValidationEngine.Validar(linhas, new OpcoesLayout(), Validador, Mapper).ToList();
 
         var valido = Assert.IsType<RegistroValido<RegistroTeste>>(Assert.Single(resultados));
         Assert.Equal("Maria", valido.Registro.Nome);
     }
 
     [Fact]
-    public void Validar_LinhaDelimitada_RespeitaDelimitadorCustomizado()
+    public void Validar_LinhaDelimitada_UsaODelimitadorDeOpcoesLayout()
     {
+        // Mesmo OpcoesLayout que uma fachada de arquivo do mesmo layout usaria — é assim que os
+        // dois caminhos ficam consistentes sem duplicar o valor do delimitador em dois lugares.
         var linhas = new[] { "Maria,30,01/01/1994" };
 
-        var resultados = LayoutValidationEngine.Validar(linhas, ",", Validador, Mapper).ToList();
+        var resultados = LayoutValidationEngine.Validar(
+            linhas, new OpcoesLayout { Delimitador = "," }, Validador, Mapper).ToList();
 
         Assert.All(resultados, r => Assert.IsType<RegistroValido<RegistroTeste>>(r));
+    }
+
+    [Fact]
+    public void Validar_LinhaDelimitada_CabecalhoEmOpcoesLayoutEhIgnorado()
+    {
+        // Mesmo passando Cabecalho = Presente, este caminho é sempre posicional — não existe
+        // conceito de cabeçalho aqui, e não deve tratar a primeira linha como cabeçalho.
+        var linhas = new[] { "Maria;30;01/01/1994" };
+
+        var resultados = LayoutValidationEngine.Validar(
+            linhas, new OpcoesLayout { Cabecalho = ModoCabecalho.Presente }, Validador, Mapper).ToList();
+
+        var valido = Assert.IsType<RegistroValido<RegistroTeste>>(Assert.Single(resultados));
+        Assert.Equal("Maria", valido.Registro.Nome);
     }
 
     [Fact]
@@ -102,7 +121,7 @@ public class LayoutValidationEngineLinhasTestes
         // mesma robustez de escaping que o caminho de arquivo já tem via CsvHelper.
         var linhas = new[] { "\"Maria;Silva\";30;01/01/1994" };
 
-        var resultados = LayoutValidationEngine.Validar(linhas, ";", Validador, Mapper).ToList();
+        var resultados = LayoutValidationEngine.Validar(linhas, new OpcoesLayout(), Validador, Mapper).ToList();
 
         var valido = Assert.IsType<RegistroValido<RegistroTeste>>(Assert.Single(resultados));
         Assert.Equal("Maria;Silva", valido.Registro.Nome);
@@ -113,7 +132,7 @@ public class LayoutValidationEngineLinhasTestes
     {
         var linhas = new[] { "Maria;30" };
 
-        var resultados = LayoutValidationEngine.Validar(linhas, ";", Validador, Mapper).ToList();
+        var resultados = LayoutValidationEngine.Validar(linhas, new OpcoesLayout(), Validador, Mapper).ToList();
 
         var invalido = Assert.IsType<RegistroInvalido<RegistroTeste>>(Assert.Single(resultados));
         Assert.Equal("EstruturaDeColunas", Assert.Single(invalido.Erros).NomeRegra);
@@ -123,7 +142,7 @@ public class LayoutValidationEngineLinhasTestes
     public void Validar_LinhaDelimitada_SequenciaVazia_NaoRetornaNadaENaoQuebra()
     {
         var resultados = LayoutValidationEngine.Validar(
-            Array.Empty<string>(), ";", Validador, Mapper).ToList();
+            Array.Empty<string>(), new OpcoesLayout(), Validador, Mapper).ToList();
 
         Assert.Empty(resultados);
     }

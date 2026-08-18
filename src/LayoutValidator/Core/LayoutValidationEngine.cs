@@ -118,21 +118,22 @@ public static class LayoutValidationEngine
     }
 
     /// <summary>
-    /// Valida dados que já chegam como uma linha de texto delimitada por linha — sem arquivo,
-    /// sem cabeçalho, sem <see cref="OpcoesLayout"/> e sem precisar de uma fachada de layout.
-    /// Cada item de <paramref name="linhas"/> é quebrado em campos pelo <paramref
-    /// name="delimitador"/> informado (com o mesmo parser do caminho de arquivo, então aspas e
-    /// escaping são tratados igual) e casado por <b>posição</b>, mesma convenção do overload que
-    /// recebe <c>IEnumerable&lt;IReadOnlyList&lt;string&gt;&gt;</c>.
+    /// Valida dados que já chegam como uma linha de texto delimitada por linha — sem arquivo e
+    /// sem precisar de uma fachada de layout. Cada item de <paramref name="linhas"/> é quebrado
+    /// em campos pelo <see cref="OpcoesLayout.Delimitador"/> de <paramref name="opcoes"/> (com o
+    /// mesmo parser do caminho de arquivo, então aspas e escaping são tratados igual) e casado
+    /// por <b>posição</b>, mesma convenção do overload que recebe
+    /// <c>IEnumerable&lt;IReadOnlyList&lt;string&gt;&gt;</c>.
     ///
-    /// O <paramref name="delimitador"/> aqui é independente do <see cref="OpcoesLayout.Delimitador"/>
-    /// de uma eventual fachada do mesmo layout — se o layout também for validado a partir de
-    /// arquivo com um delimitador customizado, é responsabilidade de quem chama manter os dois
-    /// consistentes; a engine não faz esse vínculo automaticamente.
+    /// <see cref="OpcoesLayout.Cabecalho"/> é <b>ignorado</b> aqui — este caminho nunca tem
+    /// cabeçalho, todo item de <paramref name="linhas"/> é dado. Reusar aqui o mesmo <see
+    /// cref="OpcoesLayout"/> de uma eventual fachada do layout (arquivo) é o jeito de garantir
+    /// que os dois caminhos usam o mesmo delimitador sem duplicar o valor — só o
+    /// <c>Delimitador</c> é lido.
     /// </summary>
     public static IEnumerable<ResultadoValidacaoRegistro<T>> Validar<TRaw, T>(
         IEnumerable<string> linhas,
-        string delimitador,
+        OpcoesLayout opcoes,
         IValidator<TRaw> validador,
         ILayoutMapper<TRaw, T> mapper)
         where TRaw : class, new()
@@ -141,7 +142,7 @@ public static class LayoutValidationEngine
         var colunasEsperadas = nomesDeColuna.Length;
         var configuracaoLinha = new CsvConfiguration(CultureInfo.InvariantCulture)
         {
-            Delimiter = delimitador,
+            Delimiter = opcoes.Delimitador,
             HasHeaderRecord = false
         };
         var numeroLinha = 0;
@@ -157,7 +158,7 @@ public static class LayoutValidationEngine
 
             yield return campos.Length == colunasEsperadas
                 ? ValidarLinha(ConstruirRawPosicional<TRaw>(campos), numeroLinha, validador, mapper)
-                : RegistroEstruturaInvalida<T>(numeroLinha, nomesDeColuna, campos, delimitador, colunasEsperadas);
+                : RegistroEstruturaInvalida<T>(numeroLinha, nomesDeColuna, campos, opcoes.Delimitador, colunasEsperadas);
         }
     }
 

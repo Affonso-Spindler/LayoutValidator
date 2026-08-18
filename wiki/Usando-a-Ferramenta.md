@@ -113,9 +113,10 @@ Console.WriteLine($"{resumo.RegistrosInvalidos} de {resumo.TotalRegistros} regis
 Quando o dado a validar já é o retorno de uma consulta (MySQL, Postgres, SQL Server) —
 ou qualquer outra fonte que não seja um arquivo — não é preciso escrever nada em disco
 nem criar uma fachada de layout (`XxxValidadorLayout`). `LayoutValidationEngine.Validar`
-tem dois overloads pra isso, os dois **sempre posicionais** (sem conceito de cabeçalho —
-a ordem dos valores tem que bater com a ordem de declaração das propriedades `string` do
-Raw Model) e **sem `OpcoesLayout`**:
+tem dois overloads pra isso, os dois **sempre posicionais** — não existe conceito de
+cabeçalho aqui, a ordem dos valores tem que bater com a ordem de declaração das
+propriedades `string` do Raw Model, mesmo quando um `OpcoesLayout` é passado (ver
+abaixo):
 
 ```csharp
 using System.Data;
@@ -151,12 +152,14 @@ foreach (var resultado in LayoutValidationEngine.Validar(linhas, validador, mapp
 
 Se preferir montar uma linha de texto já delimitada em vez de separar os valores você
 mesmo (por exemplo, reaproveitando um `CsvWriter` ou lógica que já existe), tem o
-overload equivalente que recebe o delimitador:
+overload equivalente que recebe um `OpcoesLayout` — o mesmo que uma fachada de arquivo
+desse layout já usaria:
 
 ```csharp
 var linhas = new[] { "Maria;30;01/01/1994;12345678900" };
+var opcoes = new OpcoesLayout(); // mesmo delimitador ';' do layout Pessoa em arquivo
 
-foreach (var resultado in LayoutValidationEngine.Validar(linhas, ";", validador, mapper))
+foreach (var resultado in LayoutValidationEngine.Validar(linhas, opcoes, validador, mapper))
 {
     // mesma lógica de leitura do resultado
 }
@@ -164,10 +167,11 @@ foreach (var resultado in LayoutValidationEngine.Validar(linhas, ";", validador,
 
 Dois pontos que vale ter em mente:
 
-- **O delimitador desse overload não tem nenhum vínculo com o `OpcoesLayout.Delimitador`**
-  de uma eventual fachada do mesmo layout usada pro caminho de arquivo — se os dois
-  caminhos convivem no mesmo projeto com delimitador customizado, é responsabilidade de
-  quem chama manter os dois consistentes.
+- **Só o `OpcoesLayout.Delimitador` é lido — `Cabecalho` é ignorado.** Passar
+  `new OpcoesLayout()` (ou o mesmo `OpcoesLayout` que a fachada de arquivo do layout já
+  declara) garante que os dois caminhos usam o mesmo delimitador sem duplicar esse valor
+  em dois lugares, mas o modo de cabeçalho não se aplica aqui de jeito nenhum — este
+  caminho é sempre posicional, mesmo que o `OpcoesLayout` diga `Cabecalho = Presente`.
 - **`PessoaValidador`/`PessoaMapper` são os mesmos objetos que o layout CSV já usa** —
   só funciona bem quando os valores chegam já formatados exatamente como aquele
   `Validador`/`Mapper` espera. Uma regra de formato pensada pro texto de um arquivo
