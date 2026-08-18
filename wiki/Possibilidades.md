@@ -77,36 +77,10 @@ longo do tempo "esse fornecedor de arquivo está piorando a qualidade dos dados?
 alguém precisaria persistir os resumos (por execução, por arquivo, por regra) em algum
 lugar — um banco simples ou até um CSV/JSON append-only já resolveria pra começar.
 
-## Validar retorno de consulta (sem passar por arquivo)
+## ~~Validar retorno de consulta (sem passar por arquivo)~~ — implementado
 
-Hoje a única porta de entrada é `IValidadorLayout<T>.Validar(TextReader)` — o dado
-precisa ser (ou virar) um arquivo delimitado. Quando o que se quer validar já é o
-retorno de uma consulta (MySQL, Postgres, SQL Server), a única forma de usar a
-ferramenta hoje seria escrever esse retorno num arquivo temporário e validar o
-arquivo — I/O desperdiçado pra um dado que já está em memória, tipado e nomeado por
-coluna.
-
-O que hoje impede isso: `LayoutValidationEngine.Validar` mistura duas
-responsabilidades numa função só — (1) leitura CSV-específica (`CsvReader`, casamento
-de cabeçalho, delimitador, checagem de contagem de colunas — ver "Linhas
-estruturalmente quebradas" no README) e (2) o loop de validação+mapeamento
-(`IValidator<TRaw>` + `ILayoutMapper<TRaw,T>`), que não sabe nem precisa saber que a
-fonte é um CSV. Separar essas duas partes é o que abriria espaço pra um novo ponto de
-entrada — por exemplo `Validar(IDataReader)` — reaproveitando o mesmo trio
-`TRaw`/`Validador`/`Mapper` e a interface pública `IValidadorLayout<T>`, sem duplicar
-regra nenhuma.
-
-Ponto em aberto, não trivial: o contrato "duas peças" (ver README) parte de que o Raw
-Model é **sempre string**, porque é isso que garante que uma célula malformada vira
-`RegistroInvalido` em vez de estourar exceção na leitura. Um `IDataReader` já entrega
-valor tipado (`int`, `DateTime`, `decimal`) — daria pra converter cada valor pra string
-na borda (`.ToString()`), mas isso reintroduz risco de falso positivo de formato
-(`CultureInfo`, formatação de data/decimal) que não existiria comparando tipo a tipo. Essa
-decisão de design fica pra quando a implementação for de fato encarada — ver o card
-correspondente no Trello.
-
-Consequência de escopo: isso amplia a decisão de escopo v1 ("só arquivos delimitados")
-do README, então precisaria ser revisitada junto.
-
-Plano detalhado, com as alternativas de implementação pesadas uma contra a outra, em
-[ADR-0001](../docs/adr/0001-validar-retorno-de-consulta.md).
+Deixou de ser possibilidade futura: `LayoutValidationEngine.Validar` já aceita dados que
+não vêm de arquivo (ex.: retorno de consulta) direto, sem fachada de layout. Ver
+[Usando a Ferramenta § 6](Usando-a-Ferramenta.md#6-validando-dados-que-já-estão-em-memória-sem-arquivo)
+pro uso, e [ADR-0001](../docs/adr/0001-validar-retorno-de-consulta.md) pra decisão e
+alternativas consideradas.

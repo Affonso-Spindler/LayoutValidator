@@ -108,7 +108,73 @@ foreach (var resultado in validadorLayout.Validar(leitor))
 Console.WriteLine($"{resumo.RegistrosInvalidos} de {resumo.TotalRegistros} registros com erro.");
 ```
 
-## 6. Testando na unha com o App de Teste
+## 6. Validando dados que já estão em memória (sem arquivo)
+
+Quando o dado a validar já é o retorno de uma consulta (MySQL, Postgres, SQL Server) —
+ou qualquer outra fonte que não seja um arquivo — não é preciso escrever nada em disco
+nem criar uma fachada de layout (`XxxValidadorLayout`). `LayoutValidationEngine.Validar`
+tem dois overloads pra isso, os dois **sempre posicionais** (sem conceito de cabeçalho —
+a ordem dos valores tem que bater com a ordem de declaração das propriedades `string` do
+Raw Model) e **sem `OpcoesLayout`**:
+
+```csharp
+using System.Data;
+
+var tabela = new DataTable();
+// ... tabela.Load(leitor) ou new SqlDataAdapter(comando).Fill(tabela) ...
+
+var validador = new PessoaValidador();
+var mapper = new PessoaMapper();
+
+var linhas = tabela.Rows.Cast<DataRow>().Select(linha => (IReadOnlyList<string>) new[]
+{
+    linha["Nome"].ToString() ?? "",
+    linha["Idade"].ToString() ?? "",
+    // Quem monta a linha formata cada valor do jeito que o Validador/Mapper espera — a
+    // engine não converte tipo nenhum. Uma coluna DateTime do banco já é sempre uma data
+    // válida (garantida pelo próprio tipo); o formato aqui só precisa bater com o que o
+    // PessoaMapper.Map vai fazer um DateTime.ParseExact em cima.
+    ((DateTime) linha["DataNascimento"]).ToString("dd/MM/yyyy"),
+    linha["Cpf"].ToString() ?? ""
+});
+
+var resumo = new ResumoValidacaoLayout();
+var pessoasValidas = new List<Pessoa>();
+
+foreach (var resultado in LayoutValidationEngine.Validar(linhas, validador, mapper))
+{
+    resumo.Registrar(resultado);
+    if (resultado is RegistroValido<Pessoa> valido)
+        pessoasValidas.Add(valido.Registro);
+}
+```
+
+Se preferir montar uma linha de texto já delimitada em vez de separar os valores você
+mesmo (por exemplo, reaproveitando um `CsvWriter` ou lógica que já existe), tem o
+overload equivalente que recebe o delimitador:
+
+```csharp
+var linhas = new[] { "Maria;30;01/01/1994;12345678900" };
+
+foreach (var resultado in LayoutValidationEngine.Validar(linhas, ";", validador, mapper))
+{
+    // mesma lógica de leitura do resultado
+}
+```
+
+Dois pontos que vale ter em mente:
+
+- **O delimitador desse overload não tem nenhum vínculo com o `OpcoesLayout.Delimitador`**
+  de uma eventual fachada do mesmo layout usada pro caminho de arquivo — se os dois
+  caminhos convivem no mesmo projeto com delimitador customizado, é responsabilidade de
+  quem chama manter os dois consistentes.
+- **`PessoaValidador`/`PessoaMapper` são os mesmos objetos que o layout CSV já usa** —
+  só funciona bem quando os valores chegam já formatados exatamente como aquele
+  `Validador`/`Mapper` espera. Uma regra de formato pensada pro texto de um arquivo
+  (ex.: `.Data()` conferindo `dd/MM/yyyy`) só faz sentido aqui se você formatar o valor
+  tipado do banco nesse mesmo padrão antes de montar a linha.
+
+## 7. Testando na unha com o App de Teste
 
 `apps/LayoutValidator.TesteApp` é um WinForms simples pra validar qualquer arquivo sem
 escrever código: seleciona o `.csv`/`.txt`, clica em Validar, e mostra total lido,
@@ -122,7 +188,7 @@ que quiser.
 dotnet run --project apps/LayoutValidator.TesteApp/LayoutValidator.TesteApp.csproj
 ```
 
-## 7. Gerando um arquivo de teste grande
+## 8. Gerando um arquivo de teste grande
 
 `apps/LayoutValidator.GeradorDados` gera um CSV com o layout `Funcionario`, misturando
 linhas válidas, com 1 erro, com 2 erros na mesma linha e linhas estruturalmente
