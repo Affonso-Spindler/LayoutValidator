@@ -1,5 +1,7 @@
+using System.Globalization;
 using System.Reflection;
 using CsvHelper;
+using CsvHelper.Configuration;
 using FluentValidation;
 
 namespace LayoutValidator.Core;
@@ -68,51 +70,95 @@ public static class LayoutValidationEngine
 
             if (camposRaw.Length != colunasEsperadas)
             {
-                yield return new RegistroInvalido<T>
-                {
-                    NumeroLinha = numeroLinha,
-                    ValoresRaw = ExtrairValoresRawDaLinha(nomesDeColuna, camposRaw),
-                    Erros = new[]
-                    {
-                        new ErroValidacaoLayout
-                        {
-                            NumeroLinha = numeroLinha,
-                            NomeCampo = "(linha)",
-                            ValorRaw = string.Join(configuracaoCsv.Delimiter, camposRaw),
-                            NomeRegra = "EstruturaDeColunas",
-                            Mensagem = $"Linha com {camposRaw.Length} coluna(s), esperado {colunasEsperadas}."
-                        }
-                    }
-                };
+                yield return RegistroEstruturaInvalida<T>(numeroLinha, nomesDeColuna, camposRaw, configuracaoCsv.Delimiter, colunasEsperadas);
                 continue;
             }
 
             var raw = csv.GetRecord<TRaw>()!;
-            var resultado = validador.Validate(raw);
+            yield return ValidarLinha(raw, numeroLinha, validador, mapper);
+        }
+    }
 
-            if (resultado.IsValid)
+    /// <summary>
+    /// Valida dados que já chegam como valores de texto separados por linha — sem arquivo, sem
+    /// cabeçalho, sem <see cref="OpcoesLayout"/> e sem precisar de uma fachada de layout. Cada
+    /// item de <paramref name="linhas"/> é uma linha, casada por <b>posição</b> com as
+    /// propriedades <c>string</c> do Raw Model, na ordem em que foram declaradas — a mesma
+    /// convenção que <see cref="ModoCabecalho.Ausente"/> já usa no caminho de arquivo. Não há
+    /// conceito de cabeçalho aqui: todo item de <paramref name="linhas"/> é tratado como dado.
+    ///
+    /// Quem monta <paramref name="linhas"/> (ex.: a partir de um <c>DataTable</c> com o retorno
+    /// de uma consulta) é responsável por converter e formatar cada valor do jeito que o
+    /// <paramref name="validador"/>/<paramref name="mapper"/> esperam — a engine não faz nenhuma
+    /// conversão de tipo nem tentativa de adivinhar formato.
+    /// </summary>
+    public static IEnumerable<ResultadoValidacaoRegistro<T>> Validar<TRaw, T>(
+        IEnumerable<IReadOnlyList<string>> linhas,
+        IValidator<TRaw> validador,
+        ILayoutMapper<TRaw, T> mapper)
+        where TRaw : class, new()
+    {
+        var nomesDeColuna = PropriedadesDeTexto<TRaw>.Nomes;
+        var colunasEsperadas = nomesDeColuna.Length;
+        var numeroLinha = 0;
+
+        foreach (var valores in linhas)
+        {
+            numeroLinha++;
+
+            if (valores.Count != colunasEsperadas)
             {
-                yield return new RegistroValido<T>
-                {
-                    NumeroLinha = numeroLinha,
-                    Registro = mapper.Map(raw)
-                };
+                yield return RegistroEstruturaInvalida<T>(numeroLinha, nomesDeColuna, valores.ToArray(), ", ", colunasEsperadas);
                 continue;
             }
 
-            yield return new RegistroInvalido<T>
-            {
-                NumeroLinha = numeroLinha,
-                ValoresRaw = ExtrairValoresRaw(raw),
-                Erros = resultado.Errors.Select(falha => new ErroValidacaoLayout
-                {
-                    NumeroLinha = numeroLinha,
-                    NomeCampo = falha.PropertyName,
-                    ValorRaw = falha.AttemptedValue?.ToString() ?? string.Empty,
-                    NomeRegra = string.IsNullOrEmpty(falha.ErrorCode) ? falha.ErrorMessage : falha.ErrorCode,
-                    Mensagem = falha.ErrorMessage
-                }).ToList()
-            };
+            var raw = ConstruirRawPosicional<TRaw>(valores);
+            yield return ValidarLinha(raw, numeroLinha, validador, mapper);
+        }
+    }
+
+    /// <summary>
+    /// Valida dados que já chegam como uma linha de texto delimitada por linha — sem arquivo e
+    /// sem precisar de uma fachada de layout. Cada item de <paramref name="linhas"/> é quebrado
+    /// em campos pelo <see cref="OpcoesLayout.Delimitador"/> de <paramref name="opcoes"/> (com o
+    /// mesmo parser do caminho de arquivo, então aspas e escaping são tratados igual) e casado
+    /// por <b>posição</b>, mesma convenção do overload que recebe
+    /// <c>IEnumerable&lt;IReadOnlyList&lt;string&gt;&gt;</c>.
+    ///
+    /// <see cref="OpcoesLayout.Cabecalho"/> é <b>ignorado</b> aqui — este caminho nunca tem
+    /// cabeçalho, todo item de <paramref name="linhas"/> é dado. Reusar aqui o mesmo <see
+    /// cref="OpcoesLayout"/> de uma eventual fachada do layout (arquivo) é o jeito de garantir
+    /// que os dois caminhos usam o mesmo delimitador sem duplicar o valor — só o
+    /// <c>Delimitador</c> é lido.
+    /// </summary>
+    public static IEnumerable<ResultadoValidacaoRegistro<T>> Validar<TRaw, T>(
+        IEnumerable<string> linhas,
+        OpcoesLayout opcoes,
+        IValidator<TRaw> validador,
+        ILayoutMapper<TRaw, T> mapper)
+        where TRaw : class, new()
+    {
+        var nomesDeColuna = PropriedadesDeTexto<TRaw>.Nomes;
+        var colunasEsperadas = nomesDeColuna.Length;
+        var configuracaoLinha = new CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            Delimiter = opcoes.Delimitador,
+            HasHeaderRecord = false
+        };
+        var numeroLinha = 0;
+
+        foreach (var linha in linhas)
+        {
+            numeroLinha++;
+
+            using var leitorDeLinha = new StringReader(linha);
+            using var parser = new CsvParser(leitorDeLinha, configuracaoLinha);
+
+            var campos = parser.Read() ? (parser.Record ?? Array.Empty<string>()) : Array.Empty<string>();
+
+            yield return campos.Length == colunasEsperadas
+                ? ValidarLinha(ConstruirRawPosicional<TRaw>(campos), numeroLinha, validador, mapper)
+                : RegistroEstruturaInvalida<T>(numeroLinha, nomesDeColuna, campos, opcoes.Delimitador, colunasEsperadas);
         }
     }
 
@@ -131,6 +177,57 @@ public static class LayoutValidationEngine
         public static readonly string[] Nomes = Todas.Select(propriedade => propriedade.Name).ToArray();
     }
 
+    /// <summary>
+    /// Constrói um <typeparamref name="TRaw"/> a partir de valores já na ordem posicional das
+    /// propriedades <c>string</c> do Raw Model — reusado pelos caminhos que não têm cabeçalho
+    /// (sem arquivo, ou <see cref="ModoCabecalho.Ausente"/>).
+    /// </summary>
+    private static TRaw ConstruirRawPosicional<TRaw>(IReadOnlyList<string> valores)
+        where TRaw : class, new()
+    {
+        var raw = new TRaw();
+        var propriedades = PropriedadesDeTexto<TRaw>.Todas;
+
+        for (var i = 0; i < propriedades.Length; i++)
+            propriedades[i].SetValue(raw, valores[i]);
+
+        return raw;
+    }
+
+    /// <summary>
+    /// O passo agnóstico de fonte, comum aos três caminhos de entrada: valida o Raw Model já
+    /// montado e, se passar, mapeia pro tipo final; senão monta o <see cref="RegistroInvalido{T}"/>
+    /// a partir dos erros do FluentValidation.
+    /// </summary>
+    private static ResultadoValidacaoRegistro<T> ValidarLinha<TRaw, T>(
+        TRaw raw, int numeroLinha, IValidator<TRaw> validador, ILayoutMapper<TRaw, T> mapper)
+    {
+        var resultado = validador.Validate(raw);
+
+        if (resultado.IsValid)
+        {
+            return new RegistroValido<T>
+            {
+                NumeroLinha = numeroLinha,
+                Registro = mapper.Map(raw)
+            };
+        }
+
+        return new RegistroInvalido<T>
+        {
+            NumeroLinha = numeroLinha,
+            ValoresRaw = ExtrairValoresRaw(raw),
+            Erros = resultado.Errors.Select(falha => new ErroValidacaoLayout
+            {
+                NumeroLinha = numeroLinha,
+                NomeCampo = falha.PropertyName,
+                ValorRaw = falha.AttemptedValue?.ToString() ?? string.Empty,
+                NomeRegra = string.IsNullOrEmpty(falha.ErrorCode) ? falha.ErrorMessage : falha.ErrorCode,
+                Mensagem = falha.ErrorMessage
+            }).ToList()
+        };
+    }
+
     private static IReadOnlyDictionary<string, string> ExtrairValoresRaw<TRaw>(TRaw raw)
     {
         return PropriedadesDeTexto<TRaw>.Todas
@@ -142,5 +239,31 @@ public static class LayoutValidationEngine
         return nomesDeColuna
             .Zip(campos, (nome, valor) => (nome, valor))
             .ToDictionary(par => par.nome, par => par.valor);
+    }
+
+    /// <summary>
+    /// Uma linha cuja contagem de campos não bate com o número de propriedades do Raw Model —
+    /// mesmo tratamento nos três caminhos de entrada: vira <see cref="RegistroInvalido{T}"/> com
+    /// <c>NomeRegra = "EstruturaDeColunas"</c>, sem interromper a leitura das demais linhas.
+    /// </summary>
+    private static RegistroInvalido<T> RegistroEstruturaInvalida<T>(
+        int numeroLinha, string[] nomesDeColuna, string[] campos, string separadorParaMensagem, int colunasEsperadas)
+    {
+        return new RegistroInvalido<T>
+        {
+            NumeroLinha = numeroLinha,
+            ValoresRaw = ExtrairValoresRawDaLinha(nomesDeColuna, campos),
+            Erros = new[]
+            {
+                new ErroValidacaoLayout
+                {
+                    NumeroLinha = numeroLinha,
+                    NomeCampo = "(linha)",
+                    ValorRaw = string.Join(separadorParaMensagem, campos),
+                    NomeRegra = "EstruturaDeColunas",
+                    Mensagem = $"Linha com {campos.Length} coluna(s), esperado {colunasEsperadas}."
+                }
+            }
+        };
     }
 }

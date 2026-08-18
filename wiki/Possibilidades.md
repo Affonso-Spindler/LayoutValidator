@@ -76,3 +76,11 @@ O `ResumoValidacaoLayout` hoje vive só durante uma execução. Se for útil aco
 longo do tempo "esse fornecedor de arquivo está piorando a qualidade dos dados?",
 alguém precisaria persistir os resumos (por execução, por arquivo, por regra) em algum
 lugar — um banco simples ou até um CSV/JSON append-only já resolveria pra começar.
+
+## ~~Validar retorno de consulta (sem passar por arquivo)~~ — implementado
+
+Deixou de ser possibilidade futura: `LayoutValidationEngine.Validar` já aceita dados que
+não vêm de arquivo (ex.: retorno de consulta) direto, sem fachada de layout. Ver
+[Usando a Ferramenta § 6](Usando-a-Ferramenta.md#6-validando-dados-que-já-estão-em-memória-sem-arquivo)
+pro uso, e [ADR-0001](../docs/adr/0001-validar-retorno-de-consulta.md) pra decisão e
+alternativas consideradas.

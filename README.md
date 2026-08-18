@@ -16,9 +16,13 @@ Esta biblioteca existe para pegar isso antes, de forma reutilizável entre proje
 
 ## Decisões de escopo (v1)
 
-- Só arquivos **delimitados** (CSV, pipe, etc.) — sem layout posicional/largura fixa.
+- Arquivos **delimitados** (CSV, pipe, etc.) — sem layout posicional/largura fixa — ou dados já
+  em memória no mesmo formato (linhas com valores posicionais, com ou sem delimitador) pra quem
+  não tem um arquivo pra validar — ver "Validando dados que já estão em memória" na
+  [wiki](wiki/Usando-a-Ferramenta.md#6-validando-dados-que-já-estão-em-memória-sem-arquivo).
 - Delimitador padrão é **`;`**, e o formato do arquivo (delimitador + tratamento da primeira
-  linha) é declarado **no layout** — ver "Formato do arquivo" abaixo.
+  linha) é declarado **no layout** — ver "Formato do arquivo" abaixo. (Não se aplica ao caminho
+  de dados em memória, que é sempre posicional e não passa por `OpcoesLayout`.)
 - **Encoding fora de escopo** por enquanto (maioria dos arquivos é UTF-8).
 - Linha com qualquer erro é **descartada** do conjunto de válidos — só aparece no
   relatório de erros, com o valor raw original.
