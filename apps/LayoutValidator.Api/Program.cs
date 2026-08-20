@@ -1,4 +1,5 @@
 using LayoutValidator.Api.Dados;
+using LayoutValidator.Api.Endpoints;
 using LayoutValidator.Api.Regras;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,6 +16,8 @@ using (var escopoDeInicializacao = app.Services.CreateScope())
 {
     escopoDeInicializacao.ServiceProvider.GetRequiredService<ApiDbContext>().Database.Migrate();
 }
+
+app.MapLayoutsEndpoints();
 
 app.Run();
 
