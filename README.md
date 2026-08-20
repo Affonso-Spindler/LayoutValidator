@@ -324,6 +324,11 @@ dotnet run --project apps/LayoutValidator.Api/LayoutValidator.Api.csproj
 O sample imprime o resumo (total/válidos/inválidos, erros por regra e por campo) e
 gera `relatorio_erros.csv` ao lado do executável.
 
+Com `LayoutValidator.Api` rodando, a documentação interativa (Swagger UI) fica em
+`http://localhost:5000/swagger` — lista todos os endpoints, os schemas de request/response e
+permite testar chamadas direto do navegador. Sempre habilitada (não só em `Development`), já
+que a API é local por natureza (sem autenticação, ver ADR-0002).
+
 ## Pontos em aberto para o futuro
 
 - **Encoding**: fora de escopo nessa v1 (maioria dos arquivos é UTF-8). Se algum dia

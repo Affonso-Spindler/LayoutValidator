@@ -8,8 +8,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<ICatalogoDeRegras, CatalogoDeRegras>();
 builder.Services.AddDbContext<ApiDbContext>(opcoes =>
     opcoes.UseSqlite(builder.Configuration.GetConnectionString("Padrao")));
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// Swagger sempre habilitado (não só em Development): a API é local por natureza (sem
+// autenticação, ver ADR-0002), então não há o risco de expor a UI numa API pública.
+app.UseSwagger();
+app.UseSwaggerUI();
 
 // Backstop de processo: qualquer exceção não tratada por um handler específico (fora as
 // guardas explícitas de corpo nulo/parcial nos endpoints) ainda deve virar um 500 com corpo
