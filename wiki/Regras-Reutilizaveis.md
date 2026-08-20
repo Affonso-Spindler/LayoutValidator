@@ -15,6 +15,11 @@ FluentValidation. Você pode usar o core sem ele, usar ele sem o core, ou — o 
 usar os dois e ainda escrever as suas próprias regras por cima, do jeito descrito lá embaixo
 em [Criando a sua própria biblioteca de regras](#criando-a-sua-própria-biblioteca-de-regras).
 
+Se o layout não é código C# e sim cadastrado em banco via
+[API local](Cadastro-de-Layouts-via-API.md), o catálogo é o mesmo conjunto de regras — só
+referenciado por chave (`"Cpf"`, `"InteiroEntre"`) em vez de método de extensão
+(`.Cpf()`, `.InteiroEntre()`).
+
 ## As duas regras do jogo
 
 Duas convenções valem pra todo o catálogo. Entender elas evita 90% das surpresas.
