@@ -15,4 +15,4 @@ obj/
 dados-teste/
 
 # Banco SQLite local da API de cadastro de layouts — recriado pela migração no startup.
-apps/LayoutValidator.Api/*.db
+apps/LayoutValidator.Api/*.db*
