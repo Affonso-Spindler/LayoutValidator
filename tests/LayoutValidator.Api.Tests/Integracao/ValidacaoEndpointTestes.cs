@@ -69,6 +69,19 @@ public class ValidacaoEndpointTestes : IClassFixture<ApiFactoryDeTeste>
     }
 
     [Fact]
+    public async Task Validar_CorpoSemLinhaRetorna400()
+    {
+        // "linha" ausente do JSON — sem a guarda, DivisorDeLinha.Dividir(null, ...) explodia
+        // com ArgumentNullException dentro de new StringReader(null) (500) em vez de 400.
+        await CadastrarLayoutPessoaAsync("VALPESSOA5");
+
+        var conteudo = new StringContent("{}", System.Text.Encoding.UTF8, "application/json");
+        var resposta = await _cliente.PostAsync("/layouts/VALPESSOA5/validar", conteudo);
+
+        Assert.Equal(HttpStatusCode.BadRequest, resposta.StatusCode);
+    }
+
+    [Fact]
     public async Task Validar_CampoObrigatorioVazioRetornaErro()
     {
         await CadastrarLayoutPessoaAsync("VALPESSOA4");

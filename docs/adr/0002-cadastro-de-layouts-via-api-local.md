@@ -85,6 +85,16 @@ O contrato "regra de formato não reprova valor vazio" (hoje em `ConstrutorRegra
 é aplicado genericamente pelo avaliador do catálogo pra toda regra exceto `Obrigatorio`, em
 vez de cada implementação reimplementar o check de vazio.
 
+#### Implementado como
+
+Na implementação real (`RegraCadastrada` em `apps/LayoutValidator.Api/Regras/RegraCadastrada.cs`),
+o tipo acima não é uma interface com uma propriedade fixa `CodigoErro` — é uma classe sealed
+de delegados (`Func<string, JsonElement?, bool> Avaliar`, `Func<JsonElement?, string>
+ObterCodigoErro`, `Func<string, JsonElement?, string> MontarMensagem`). Isso é deliberado: a
+regra `Formato` precisa que seu código de erro venha dos próprios parâmetros cadastrados
+(`codigoErro` no JSON), decidido em tempo de avaliação, não de um valor fixo por regra do
+catálogo — coisa que uma propriedade `string CodigoErro { get; }` simplesmente não expressa.
+
 ### Validação da definição no cadastro
 
 `POST`/`PUT /layouts` valida `ParametrosJson` de cada `RegraCampoCadastrada` contra

@@ -6,6 +6,11 @@ namespace LayoutValidator.Api.Regras;
 /// <summary>Equivalente cadastrável de LayoutValidator.Regras.RegrasBrasilExtensions.</summary>
 internal static class RegrasDeDocumentoCatalogo
 {
+    // Cep/Telefone não têm predicado equivalente em LayoutValidator.Regras.Predicados (só
+    // Documentos.CpfValido/CnpjValido/etc. existem lá) — os literais abaixo são
+    // intencionalmente duplicados dos mesmos padrões em RegrasBrasilExtensions.cs. Extrair
+    // um predicado compartilhado pra esses dois é mudança arquitetural maior, fora do escopo
+    // desta rodada de correções.
     private static readonly Regex PadraoCep = new(@"^\d{5}-?\d{3}$", RegexOptions.Compiled);
 
     private static readonly Regex PadraoTelefone =

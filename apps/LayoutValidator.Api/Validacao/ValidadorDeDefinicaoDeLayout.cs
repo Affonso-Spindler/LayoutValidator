@@ -21,13 +21,28 @@ public static class ValidadorDeDefinicaoDeLayout
     {
         var erros = new List<string>();
 
-        if (!PadraoCodigo.IsMatch(requisicao.Codigo))
+        // IsNullOrEmpty primeiro, com curto-circuito: Regex.IsMatch lança ArgumentNullException
+        // se Codigo vier null (corpo JSON sem a chave "codigo") — nunca alcança o regex nesse caso.
+        if (string.IsNullOrEmpty(requisicao.Codigo) || !PadraoCodigo.IsMatch(requisicao.Codigo))
             erros.Add($"Código '{requisicao.Codigo}' inválido: use só letras e números, até 20 caracteres.");
 
-        foreach (var campo in requisicao.Campos)
+        if (string.IsNullOrWhiteSpace(requisicao.Nome))
+            erros.Add("Nome é obrigatório.");
+
+        if (string.IsNullOrEmpty(requisicao.Delimitador))
+            erros.Add("Delimitador é obrigatório.");
+
+        if (requisicao.Campos is null || requisicao.Campos.Count == 0)
         {
-            foreach (var regraCampo in campo.Regras)
-                ValidarRegraDoCampo(campo, regraCampo, catalogo, erros);
+            erros.Add("Layout precisa ter ao menos um campo.");
+        }
+        else
+        {
+            foreach (var campo in requisicao.Campos)
+            {
+                foreach (var regraCampo in campo.Regras)
+                    ValidarRegraDoCampo(campo, regraCampo, catalogo, erros);
+            }
         }
 
         return erros;
@@ -51,6 +66,25 @@ public static class ValidadorDeDefinicaoDeLayout
                           $"'{parametroEsperado.Nome}' ({parametroEsperado.Tipo}).");
             }
         }
+
+        // "Formato" aceita uma expressão regular vinda do próprio cadastro (não do catálogo
+        // fixo) — sem essa checagem, um padrão inválido (ex.: "[") passaria no cadastro e
+        // faria Regex.IsMatch lançar ArgumentException em toda avaliação futura de /validar
+        // pra esse campo, pra sempre.
+        if (regraCampo.ChaveRegra == "Formato"
+            && regraCampo.ParametrosJson is { ValueKind: JsonValueKind.Object } parametros
+            && parametros.TryGetProperty("expressaoRegular", out var expressaoRegular)
+            && expressaoRegular.ValueKind == JsonValueKind.String)
+        {
+            try
+            {
+                _ = new Regex(expressaoRegular.GetString() ?? string.Empty);
+            }
+            catch (ArgumentException)
+            {
+                erros.Add($"Campo '{campo.Nome}': regra 'Formato' tem expressão regular inválida.");
+            }
+        }
     }
 
     private static bool TemParametroDoTipoEsperado(JsonElement? parametros, ParametroEsperado parametroEsperado)
@@ -64,9 +98,10 @@ public static class ValidadorDeDefinicaoDeLayout
         return parametroEsperado.Tipo switch
         {
             TipoParametro.Inteiro => valor.ValueKind == JsonValueKind.Number && valor.TryGetInt64(out _),
-            TipoParametro.Decimal => valor.ValueKind == JsonValueKind.Number,
+            TipoParametro.Decimal => valor.ValueKind == JsonValueKind.Number && valor.TryGetDecimal(out _),
             TipoParametro.Texto => valor.ValueKind == JsonValueKind.String,
-            TipoParametro.ListaDeTexto => valor.ValueKind == JsonValueKind.Array,
+            TipoParametro.ListaDeTexto => valor.ValueKind == JsonValueKind.Array
+                && valor.EnumerateArray().All(item => item.ValueKind == JsonValueKind.String),
             _ => false
         };
     }

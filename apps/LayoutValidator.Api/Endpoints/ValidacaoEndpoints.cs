@@ -20,6 +20,9 @@ public static class ValidacaoEndpoints
         if (layout is null)
             return Results.NotFound();
 
+        if (requisicao.Linha is null)
+            return Results.BadRequest(new { erro = "Linha é obrigatória." });
+
         var campos = layout.Campos.OrderBy(c => c.Ordem).ToList();
         var valores = DivisorDeLinha.Dividir(requisicao.Linha, layout.Delimitador);
 

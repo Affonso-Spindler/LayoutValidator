@@ -42,6 +42,45 @@ public class LayoutsEndpointsTestes : IClassFixture<ApiFactoryDeTeste>
     }
 
     [Fact]
+    public async Task Post_RejeitaCorpoSemCodigoCom400()
+    {
+        // "codigo" ausente do JSON — Codigo é string não anulável no C#, mas nada garante isso
+        // em tempo de execução na desserialização; sem a guarda, isso batia direto no regex de
+        // PadraoCodigo.IsMatch(null) e explodia com ArgumentNullException (500) em vez de 400.
+        var conteudo = new StringContent(
+            """{"nome":"Pessoa","delimitador":";","campos":[{"nome":"Cpf","regras":[]}]}""",
+            System.Text.Encoding.UTF8, "application/json");
+
+        var resposta = await _cliente.PostAsync("/layouts", conteudo);
+
+        Assert.Equal(HttpStatusCode.BadRequest, resposta.StatusCode);
+    }
+
+    [Fact]
+    public async Task Post_RejeitaCorpoSemCamposCom400()
+    {
+        // "campos" ausente do JSON — sem a guarda, o foreach sobre requisicao.Campos (null)
+        // lançava NullReferenceException (500) em vez de retornar um 400 com mensagem clara.
+        var conteudo = new StringContent(
+            """{"codigo":"SEMCAMPOS","nome":"Pessoa","delimitador":";"}""",
+            System.Text.Encoding.UTF8, "application/json");
+
+        var resposta = await _cliente.PostAsync("/layouts", conteudo);
+
+        Assert.Equal(HttpStatusCode.BadRequest, resposta.StatusCode);
+    }
+
+    [Fact]
+    public async Task Post_RejeitaCorpoComCamposVazioCom400()
+    {
+        var requisicao = new LayoutRequest("SEMCAMPOS2", "Pessoa", ";", Array.Empty<CampoRequest>());
+
+        var resposta = await _cliente.PostAsJsonAsync("/layouts", requisicao);
+
+        Assert.Equal(HttpStatusCode.BadRequest, resposta.StatusCode);
+    }
+
+    [Fact]
     public async Task Post_RejeitaLayoutComParametroFaltandoCom400()
     {
         var requisicao = new LayoutRequest("PESSOA3", "Pessoa", ";", new[]

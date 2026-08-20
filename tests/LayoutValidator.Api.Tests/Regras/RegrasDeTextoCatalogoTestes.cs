@@ -40,7 +40,9 @@ public class RegrasDeTextoCatalogoTestes
     [InlineData("123", true)]
     [InlineData("12a", false)]
     [InlineData("", true)]
-    public void SomenteDigitos_AceitaSoDigitosOuVazio(string valor, bool esperado) =>
+    [InlineData("٥٥٥", false)] // dígitos arábico-índicos ("٥٥٥") — Unicode Nd, mas não ASCII
+    [InlineData("５５５", false)]              // dígitos fullwidth — idem
+    public void SomenteDigitos_AceitaSoDigitosAsciiOuVazio(string valor, bool esperado) =>
         Assert.Equal(esperado, Regras["SomenteDigitos"].Avaliar(valor, null));
 
     [Theory]
