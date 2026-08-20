@@ -19,6 +19,7 @@ using (var escopoDeInicializacao = app.Services.CreateScope())
 
 app.MapLayoutsEndpoints();
 app.MapRegrasEndpoints();
+app.MapValidacaoEndpoints();
 
 app.Run();
 
