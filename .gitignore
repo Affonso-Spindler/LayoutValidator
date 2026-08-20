@@ -13,3 +13,6 @@ obj/
 # apps/LayoutValidator.GeradorDados (seed fixa = mesmo conteúdo sempre).
 # O CSV de 1M linhas tem ~210MB e não cabe num push normal do GitHub.
 dados-teste/
+
+# Banco SQLite local da API de cadastro de layouts — recriado pela migração no startup.
+apps/LayoutValidator.Api/*.db

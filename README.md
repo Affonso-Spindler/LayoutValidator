@@ -282,6 +282,14 @@ LayoutValidator.sln
   apps/LayoutValidator.LayoutFuncionario/  layout de referência maior (22 campos), compartilhado pelos apps abaixo
   apps/LayoutValidator.GeradorDados/       console app: gera CSV de teste com erros diversos injetados
   apps/LayoutValidator.TesteApp/           WinForms: seleciona um arquivo e mostra o resultado da validação
+  apps/LayoutValidator.Api/                cadastro de layouts em banco + API local de validacao (ADR-0002)
+    Modelos/                               entidades EF Core (LayoutCadastrado, CampoCadastrado, RegraCampoCadastrada)
+    Regras/                                catalogo de regras cadastraveis por chave (equivalente dinamico de LayoutValidator.Regras)
+    Dados/                                 ApiDbContext + migrations (SQLite)
+    Validacao/                             DivisorDeLinha, AvaliadorDeCampo, ValidadorDeDefinicaoDeLayout
+    Contratos/                             DTOs de request/response + MapeadorDeLayout
+    Endpoints/                             LayoutsEndpoints, RegrasEndpoints, ValidacaoEndpoints
+  tests/LayoutValidator.Api.Tests/         xUnit do app de cadastro (unidade + integracao via WebApplicationFactory)
   dados-teste/                             saída do gerador (não versionado — ver .gitignore)
   wiki/                                    guia de uso, como criar layouts, possibilidades futuras
 ```
@@ -310,6 +318,7 @@ referência completo desse padrão.
 ```bash
 dotnet test LayoutValidator.sln
 dotnet run --project samples/LayoutValidator.Sample/LayoutValidator.Sample.csproj
+dotnet run --project apps/LayoutValidator.Api/LayoutValidator.Api.csproj
 ```
 
 O sample imprime o resumo (total/válidos/inválidos, erros por regra e por campo) e
