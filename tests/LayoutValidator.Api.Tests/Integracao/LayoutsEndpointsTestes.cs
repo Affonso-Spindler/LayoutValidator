@@ -85,4 +85,66 @@ public class LayoutsEndpointsTestes : IClassFixture<ApiFactoryDeTeste>
         var corpo = await resposta.Content.ReadFromJsonAsync<List<LayoutResponse>>();
         Assert.Contains(corpo!, l => l.Codigo == "PESSOA5");
     }
+
+    [Fact]
+    public async Task Put_SobrescreveCamposDoLayoutExistente()
+    {
+        await _cliente.PostAsJsonAsync("/layouts", LayoutPessoaValido("PESSOA6"));
+
+        var novaDefinicao = new LayoutRequest("PESSOA6", "Pessoa Atualizada", "|", new[]
+        {
+            new CampoRequest("Email", Array.Empty<RegraCampoRequest>())
+        });
+
+        var resposta = await _cliente.PutAsJsonAsync("/layouts/PESSOA6", novaDefinicao);
+
+        Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
+        var corpo = await resposta.Content.ReadFromJsonAsync<LayoutResponse>();
+        Assert.Equal("Pessoa Atualizada", corpo!.Nome);
+        Assert.Equal("|", corpo.Delimitador);
+        Assert.Single(corpo.Campos);
+        Assert.Equal("Email", corpo.Campos[0].Nome);
+    }
+
+    [Fact]
+    public async Task Put_RetornaNotFoundParaCodigoInexistente()
+    {
+        var resposta = await _cliente.PutAsJsonAsync("/layouts/NAOEXISTE", LayoutPessoaValido("NAOEXISTE"));
+
+        Assert.Equal(HttpStatusCode.NotFound, resposta.StatusCode);
+    }
+
+    [Fact]
+    public async Task Put_RejeitaLayoutComParametroFaltandoCom400()
+    {
+        await _cliente.PostAsJsonAsync("/layouts", LayoutPessoaValido("PESSOA7"));
+
+        var definicaoInvalida = new LayoutRequest("PESSOA7", "Pessoa", ";", new[]
+        {
+            new CampoRequest("Idade", new[] { new RegraCampoRequest("InteiroEntre", null) })
+        });
+
+        var resposta = await _cliente.PutAsJsonAsync("/layouts/PESSOA7", definicaoInvalida);
+
+        Assert.Equal(HttpStatusCode.BadRequest, resposta.StatusCode);
+    }
+
+    [Fact]
+    public async Task Delete_RemoveOLayoutCadastrado()
+    {
+        await _cliente.PostAsJsonAsync("/layouts", LayoutPessoaValido("PESSOA8"));
+
+        var resposta = await _cliente.DeleteAsync("/layouts/PESSOA8");
+
+        Assert.Equal(HttpStatusCode.NoContent, resposta.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await _cliente.GetAsync("/layouts/PESSOA8")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Delete_RetornaNotFoundParaCodigoInexistente()
+    {
+        var resposta = await _cliente.DeleteAsync("/layouts/NAOEXISTE");
+
+        Assert.Equal(HttpStatusCode.NotFound, resposta.StatusCode);
+    }
 }
