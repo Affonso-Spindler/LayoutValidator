@@ -1,0 +1,15 @@
+.cabecalho-app {
+  padding: 1rem 1.5rem 0.5rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.cabecalho-app h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.subtitulo {
+  color: var(--mat-sys-on-surface-variant);
+}

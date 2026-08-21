@@ -1,0 +1,54 @@
+<div class="layout-test">
+  <h2>Testar layout</h2>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Layout</mat-label>
+    <mat-select [ngModel]="codigoSelecionado()" (ngModelChange)="codigoSelecionado.set($event)">
+      @for (layout of layouts(); track layout.codigo) {
+        <mat-option [value]="layout.codigo">{{ layout.codigo }} — {{ layout.nome }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="campo-linhas">
+    <mat-label>Linhas para testar (uma por linha)</mat-label>
+    <textarea
+      matInput
+      rows="6"
+      [ngModel]="linhas()"
+      (ngModelChange)="linhas.set($event)"
+      placeholder="11144477735;Joao;30;SP"
+    ></textarea>
+  </mat-form-field>
+
+  <button mat-raised-button color="primary" type="button" [disabled]="testando()" (click)="testar()">
+    <mat-icon>play_arrow</mat-icon>
+    Testar
+  </button>
+
+  @if (resultados().length > 0) {
+    <div class="resultados">
+      @for (item of resultados(); track $index) {
+        <div class="resultado-linha" [class.aderente]="item.resultado?.aderente" [class.nao-aderente]="item.resultado && !item.resultado.aderente || item.erro">
+          <div class="resultado-cabecalho">
+            <mat-icon>{{ item.erro ? 'error' : item.resultado?.aderente ? 'check_circle' : 'cancel' }}</mat-icon>
+            <code>{{ item.linha }}</code>
+          </div>
+
+          @if (item.erro) {
+            <p class="mensagem-erro">{{ item.erro }}</p>
+          } @else if (item.resultado && !item.resultado.aderente) {
+            <ul>
+              @for (erro of item.resultado.erros; track erro.campo + erro.regra) {
+                <li>
+                  <strong>{{ erro.campo }}</strong> ({{ erro.regra }}): {{ erro.mensagem }} — valor recebido:
+                  "{{ erro.valorRaw }}"
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

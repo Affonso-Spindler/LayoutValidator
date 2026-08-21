@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "layout-validator-api",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "apps/LayoutValidator.Api/LayoutValidator.Api.csproj"],
+      "port": 5000
+    },
+    {
+      "name": "layout-validator-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "apps/LayoutValidator.Web", "start"],
+      "port": 4200
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+<form class="layout-form" [formGroup]="form" (ngSubmit)="salvar()">
+  <h2>{{ editando() ? 'Editar layout' : 'Cadastrar layout' }}</h2>
+
+  @if (errosDeCadastro().length > 0) {
+    <div class="erros-cadastro">
+      @for (erro of errosDeCadastro(); track erro) {
+        <p>{{ erro }}</p>
+      }
+    </div>
+  }
+
+  <div class="linha-topo">
+    <mat-form-field appearance="outline">
+      <mat-label>Código</mat-label>
+      <input matInput formControlName="codigo" maxlength="20" placeholder="ex: PESSOA1" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Nome</mat-label>
+      <input matInput formControlName="nome" placeholder="ex: Pessoa" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="campo-delimitador">
+      <mat-label>Delimitador</mat-label>
+      <input matInput formControlName="delimitador" maxlength="1" placeholder=";" />
+    </mat-form-field>
+  </div>
+
+  <h3>Campos</h3>
+
+  <div formArrayName="campos" class="campos">
+    @for (campo of camposArray.controls; track $index; let campoIndex = $index) {
+      <mat-card [formGroupName]="campoIndex" class="campo-card">
+        <div class="campo-cabecalho">
+          <mat-form-field appearance="outline">
+            <mat-label>Nome do campo</mat-label>
+            <input matInput formControlName="nome" placeholder="ex: Cpf" />
+          </mat-form-field>
+          <button
+            mat-icon-button
+            type="button"
+            color="warn"
+            [disabled]="camposArray.length === 1"
+            (click)="removeCampo(campoIndex)"
+            aria-label="Remover campo"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+
+        <div formArrayName="regras" class="regras">
+          @for (regra of regrasArray(campoIndex).controls; track $index; let regraIndex = $index) {
+            <div [formGroupName]="regraIndex" class="regra-linha">
+              <mat-form-field appearance="outline">
+                <mat-label>Regra</mat-label>
+                <mat-select
+                  formControlName="chaveRegra"
+                  (selectionChange)="onRegraChange(campoIndex, regraIndex, $event.value)"
+                >
+                  @for (regraDisponivel of catalogo(); track regraDisponivel.chave) {
+                    <mat-option [value]="regraDisponivel.chave">{{ regraDisponivel.chave }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              <div [formGroup]="parametrosGroup(campoIndex, regraIndex)" class="parametros">
+                @for (esperado of parametrosEsperados(regra.get('chaveRegra')?.value); track esperado.nome) {
+                  <mat-form-field appearance="outline">
+                    <mat-label>{{ esperado.nome }}</mat-label>
+                    <input
+                      matInput
+                      [formControlName]="esperado.nome"
+                      [type]="esperado.tipo === 'Inteiro' || esperado.tipo === 'Decimal' ? 'number' : 'text'"
+                      [placeholder]="esperado.tipo === 'ListaDeTexto' ? 'valor1, valor2, ...' : ''"
+                    />
+                  </mat-form-field>
+                }
+              </div>
+
+              <button
+                mat-icon-button
+                type="button"
+                color="warn"
+                [disabled]="regrasArray(campoIndex).length === 1"
+                (click)="removeRegra(campoIndex, regraIndex)"
+                aria-label="Remover regra"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          }
+        </div>
+
+        <button mat-button type="button" (click)="addRegra(campoIndex)">
+          <mat-icon>add</mat-icon>
+          Adicionar regra
+        </button>
+      </mat-card>
+    }
+  </div>
+
+  <button mat-stroked-button type="button" (click)="addCampo()">
+    <mat-icon>add</mat-icon>
+    Adicionar campo
+  </button>
+
+  <div class="acoes">
+    @if (editando()) {
+      <button mat-button type="button" (click)="cancelarEdicao()">Cancelar</button>
+    }
+    <button mat-raised-button color="primary" type="submit" [disabled]="salvando()">
+      {{ editando() ? 'Salvar alterações' : 'Cadastrar layout' }}
+    </button>
+  </div>
+</form>

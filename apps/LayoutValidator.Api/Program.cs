@@ -10,6 +10,8 @@ builder.Services.AddDbContext<ApiDbContext>(opcoes =>
     opcoes.UseSqlite(builder.Configuration.GetConnectionString("Padrao")));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddCors(opcoes => opcoes.AddDefaultPolicy(politica =>
+    politica.WithOrigins("http://localhost:4200").AllowAnyHeader().AllowAnyMethod()));
 
 var app = builder.Build();
 
@@ -17,6 +19,7 @@ var app = builder.Build();
 // autenticação, ver ADR-0002), então não há o risco de expor a UI numa API pública.
 app.UseSwagger();
 app.UseSwaggerUI();
+app.UseCors();
 
 // Backstop de processo: qualquer exceção não tratada por um handler específico (fora as
 // guardas explícitas de corpo nulo/parcial nos endpoints) ainda deve virar um 500 com corpo
