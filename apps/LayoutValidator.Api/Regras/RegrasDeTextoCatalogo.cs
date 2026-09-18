@@ -61,7 +61,7 @@ internal static class RegrasDeTextoCatalogo
             "SomenteLetrasInvalido",
             Array.Empty<ParametroEsperado>(),
             (valor, _) => Formatos.SomenteLetras(valor),
-            (nomeCampo, _) => $"'{nomeCampo}' deve conter somente letras.");
+            (nomeCampo, _) => $"'{nomeCampo}' deve conter somente letras, espaço, apóstrofo ou hífen.");
 
         yield return ConstrutorDeRegraCadastrada.DeFormato(
             "ValorEm",

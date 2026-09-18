@@ -87,7 +87,7 @@ O código de erro é o que vira `NomeRegra` no `ErroValidacaoLayout` e o que o
 | `ComprimentoMaximo(max)` | `ComprimentoInvalido` | até `max` caracteres |
 | `ComprimentoExato(n)` | `ComprimentoInvalido` | exatamente `n` caracteres |
 | `SomenteDigitos()` | `SomenteDigitosInvalido` | só `0`-`9`, sem sinal nem separador |
-| `SomenteLetras()` | `SomenteLetrasInvalido` | letras (com acentuação) e espaço, nada mais |
+| `SomenteLetras()` | `SomenteLetrasInvalido` | letras (com acentuação), espaço, apóstrofo e hífen |
 | `ValorEm("S", "N")` | `ValorForaDoDominio` | domínio fechado, ignorando caixa |
 | `Formato(regex, codigo, mensagem)` | o que você passar | escape hatch pra regra pontual |
 

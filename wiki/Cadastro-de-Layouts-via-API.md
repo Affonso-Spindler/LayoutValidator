@@ -103,8 +103,9 @@ código/README, tudo vem daqui. As 23 chaves cobrem o mesmo catálogo do código
 `SomenteLetras`, `ValorEm`, `Formato`, `Inteiro`, `InteiroEntre`, `Decimal`, `DecimalEntre`, `Cpf`,
 `Cnpj`, `CpfOuCnpj`, `Cep`, `Uf`, `Telefone`, `Cnh`, `PisPasep`, `Data`, `DataEntre`, `DataNoPassado`.
 
-`SomenteLetras` aceita letras com acentuação (`João`) e espaço (pra nome composto, tipo
-`Maria Silva`) — dígito ou pontuação reprova.
+`SomenteLetras` aceita letras com acentuação (`João`) e a pontuação que aparece dentro de nome
+próprio: espaço (`Maria Silva`), apóstrofo (`A D'Marcas`) e hífen (`Maria-Clara`) — dígito e
+qualquer outro símbolo reprovam.
 
 `Data` e `DataEntre` aceitam um parâmetro opcional `formato` (padrão `dd/MM/yyyy`, no estilo
 .NET `DateTime` — ex.: `yyyy-MM-dd` pra ISO); `DataEntre` também exige `minimo` e `maximo` como

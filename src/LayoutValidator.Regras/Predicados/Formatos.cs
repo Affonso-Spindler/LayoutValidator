@@ -127,9 +127,13 @@ public static class Formatos
     }
 
     /// <summary>
-    /// Letras (Unicode — inclui acentuação, ex.: "João") e espaço, e mais nada — dígito ou
-    /// pontuação reprova. Espaço entra de propósito: existe pra validar "Nome" e afins, onde
-    /// "somente letras" sem espaço reprovaria qualquer nome composto ("Maria Silva").
+    /// Letras (Unicode — inclui acentuação, ex.: "João") mais o que aparece dentro de nome
+    /// próprio real: espaço ("Maria Silva"), apóstrofo ("A D'Marcas") e hífen ("Maria-Clara").
+    /// Dígito e qualquer outro símbolo reprovam.
+    ///
+    /// O nome da regra é "somente letras", mas a pergunta que ela responde é "tem número ou
+    /// lixo nesse nome?" — ser alfabeto puro reprovaria sobrenome legítimo, que é justamente
+    /// o caso que essa regra existe pra deixar passar.
     /// </summary>
     public static bool SomenteLetras(string? valor)
     {
@@ -138,7 +142,7 @@ public static class Formatos
 
         foreach (var caractere in valor)
         {
-            if (!char.IsLetter(caractere) && caractere != ' ')
+            if (!char.IsLetter(caractere) && caractere is not (' ' or '\'' or '-'))
                 return false;
         }
 

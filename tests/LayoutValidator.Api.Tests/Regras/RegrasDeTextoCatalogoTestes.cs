@@ -48,9 +48,11 @@ public class RegrasDeTextoCatalogoTestes
     [Theory]
     [InlineData("Maria Silva", true)]
     [InlineData("João", true)]
+    [InlineData("A D'Marcas", true)]
+    [InlineData("Maria-Clara", true)]
     [InlineData("Maria2", false)]
     [InlineData("", true)] // regra de formato nunca reprova vazio
-    public void SomenteLetras_AceitaLetrasEEspacoOuVazio(string valor, bool esperado) =>
+    public void SomenteLetras_AceitaLetrasEPontuacaoDeNomeOuVazio(string valor, bool esperado) =>
         Assert.Equal(esperado, Regras["SomenteLetras"].Avaliar(valor, null));
 
     [Theory]

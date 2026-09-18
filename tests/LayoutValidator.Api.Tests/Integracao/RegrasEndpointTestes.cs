@@ -41,7 +41,7 @@ public class RegrasEndpointTestes : IClassFixture<ApiFactoryDeTeste>
 
         var data = corpo!.Single(r => r.Chave == "Data");
 
-        Assert.Equal(1, data.ParametrosEsperados.Count);
+        Assert.Single(data.ParametrosEsperados);
         Assert.Contains(data.ParametrosEsperados, p => p.Nome == "formato" && !p.Obrigatorio);
     }
 }

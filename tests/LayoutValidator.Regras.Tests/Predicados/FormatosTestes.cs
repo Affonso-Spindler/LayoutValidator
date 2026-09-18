@@ -133,13 +133,16 @@ public class FormatosTestes
 
     [Theory]
     [InlineData("Maria", true)]
-    [InlineData("Maria Silva", true)]     // espaço entra de propósito — nome composto
+    [InlineData("Maria Silva", true)]     // espaço — nome composto
     [InlineData("João", true)]            // acentuação conta como letra
+    [InlineData("A D'Marcas", true)]      // apóstrofo — sobrenome legítimo
+    [InlineData("Maria-Clara", true)]     // hífen — idem
     [InlineData("Maria2", false)]
-    [InlineData("Maria-Silva", false)]    // hífen não é letra nem espaço
+    [InlineData("Maria_Silva", false)]    // underscore não é pontuação de nome
+    [InlineData("Maria@Silva", false)]
     [InlineData("", false)]
     [InlineData(null, false)]
-    public void SomenteLetras_AceitaLetrasUnicodeEEspaco(string? valor, bool esperado) =>
+    public void SomenteLetras_AceitaLetrasUnicodeEPontuacaoDeNome(string? valor, bool esperado) =>
         Assert.Equal(esperado, Formatos.SomenteLetras(valor));
 
     [Fact]
