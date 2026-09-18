@@ -98,6 +98,18 @@ public static class ValidadorDeDefinicaoDeLayout
         {
             ValidarRegraDeData(campo, regraCampo.ChaveRegra, parametrosDeData, erros);
         }
+
+        // Mesma história do "formato" de data: "casasDecimais" negativo é aceito pelo tipo
+        // (é um inteiro), mas faz MoedaValida reprovar todo valor, calado.
+        if (regraCampo.ChaveRegra == "Moeda"
+            && regraCampo.ParametrosJson is { ValueKind: JsonValueKind.Object } parametrosDeMoeda
+            && parametrosDeMoeda.TryGetProperty("casasDecimais", out var casasDecimais)
+            && casasDecimais.ValueKind == JsonValueKind.Number
+            && casasDecimais.TryGetInt32(out var casas)
+            && casas < 0)
+        {
+            erros.Add($"Campo '{campo.Nome}': regra 'Moeda' tem 'casasDecimais' negativo ({casas}).");
+        }
     }
 
     private static void ValidarRegraDeData(CampoRequest campo, string chaveRegra, JsonElement parametros, List<string> erros)
@@ -110,10 +122,13 @@ public static class ValidadorDeDefinicaoDeLayout
         {
             formato = formatoElemento.GetString()!;
 
-            if (!formato.Any(c => c is 'y' or 'M' or 'd'))
+            // Hora pura ("HH:mm") é coluna legítima de arquivo, então H/h/m/s contam tanto
+            // quanto y/M/d — o que não pode é um "formato" sem nenhum especificador real
+            // (ex.: "22222222222"), que vira literal e reprova qualquer valor pra sempre.
+            if (!formato.Any(c => c is 'y' or 'M' or 'd' or 'H' or 'h' or 'm' or 's'))
             {
-                erros.Add($"Campo '{campo.Nome}': regra '{chaveRegra}' tem 'formato' inválido — precisa " +
-                          "conter ao menos um especificador de data (y, M ou d). Ex.: dd/MM/yyyy.");
+                erros.Add($"Campo '{campo.Nome}': regra '{chaveRegra}' tem 'formato' inválido — precisa conter " +
+                          "ao menos um especificador de data ou hora (y, M, d, H, h, m ou s). Ex.: dd/MM/yyyy.");
                 return;
             }
 

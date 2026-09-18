@@ -29,6 +29,13 @@ public static class RegrasTextoExtensions
             "ComprimentoInvalido",
             $"'{{PropertyName}}' deve ter no máximo {maximo} caracteres.");
 
+    public static IRuleBuilderOptions<T, string> ComprimentoMinimo<T>(this IRuleBuilder<T, string> regra, int minimo) =>
+        ConstrutorRegra.DeFormato(
+            regra,
+            valor => Formatos.ComprimentoEntre(valor, minimo, int.MaxValue),
+            "ComprimentoInvalido",
+            $"'{{PropertyName}}' deve ter no mínimo {minimo} caracteres.");
+
     public static IRuleBuilderOptions<T, string> ComprimentoExato<T>(this IRuleBuilder<T, string> regra, int comprimento) =>
         ConstrutorRegra.DeFormato(
             regra,
@@ -52,6 +59,30 @@ public static class RegrasTextoExtensions
             Formatos.SomenteLetras,
             "SomenteLetrasInvalido",
             "'{PropertyName}' deve conter somente letras, espaço, apóstrofo ou hífen.");
+
+    /// <summary>Reprova letra acentuada ou com cedilha — pra arquivo que não carrega acento.</summary>
+    public static IRuleBuilderOptions<T, string> SemAcento<T>(this IRuleBuilder<T, string> regra) =>
+        ConstrutorRegra.DeFormato(
+            regra,
+            Formatos.SemAcento,
+            "AcentoNaoPermitido",
+            "'{PropertyName}' não pode conter acento nem cedilha.");
+
+    /// <summary>Sem letra minúscula — dígito e pontuação não interferem.</summary>
+    public static IRuleBuilderOptions<T, string> SomenteMaiusculas<T>(this IRuleBuilder<T, string> regra) =>
+        ConstrutorRegra.DeFormato(
+            regra,
+            Formatos.SomenteMaiusculas,
+            "SomenteMaiusculasInvalido",
+            "'{PropertyName}' deve estar em letras maiúsculas.");
+
+    /// <summary>Sem letra maiúscula — dígito e pontuação não interferem.</summary>
+    public static IRuleBuilderOptions<T, string> SomenteMinusculas<T>(this IRuleBuilder<T, string> regra) =>
+        ConstrutorRegra.DeFormato(
+            regra,
+            Formatos.SomenteMinusculas,
+            "SomenteMinusculasInvalido",
+            "'{PropertyName}' deve estar em letras minúsculas.");
 
     /// <summary>
     /// Reprova espaço sobrando no começo ou no fim do valor — inclusive tabulação e o

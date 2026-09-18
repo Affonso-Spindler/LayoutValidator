@@ -36,6 +36,13 @@ internal static class RegrasDeTextoCatalogo
             (nomeCampo, p) => $"'{nomeCampo}' deve ter no máximo {p.ObterInteiro("maximo")} caracteres.");
 
         yield return ConstrutorDeRegraCadastrada.DeFormato(
+            "ComprimentoMinimo",
+            "ComprimentoInvalido",
+            new[] { new ParametroEsperado("minimo", TipoParametro.Inteiro, true) },
+            (valor, p) => Formatos.ComprimentoEntre(valor, (int)p.ObterInteiro("minimo"), int.MaxValue),
+            (nomeCampo, p) => $"'{nomeCampo}' deve ter no mínimo {p.ObterInteiro("minimo")} caracteres.");
+
+        yield return ConstrutorDeRegraCadastrada.DeFormato(
             "ComprimentoExato",
             "ComprimentoInvalido",
             new[] { new ParametroEsperado("comprimento", TipoParametro.Inteiro, true) },
@@ -62,6 +69,27 @@ internal static class RegrasDeTextoCatalogo
             Array.Empty<ParametroEsperado>(),
             (valor, _) => Formatos.SomenteLetras(valor),
             (nomeCampo, _) => $"'{nomeCampo}' deve conter somente letras, espaço, apóstrofo ou hífen.");
+
+        yield return ConstrutorDeRegraCadastrada.DeFormato(
+            "SemAcento",
+            "AcentoNaoPermitido",
+            Array.Empty<ParametroEsperado>(),
+            (valor, _) => Formatos.SemAcento(valor),
+            (nomeCampo, _) => $"'{nomeCampo}' não pode conter acento nem cedilha.");
+
+        yield return ConstrutorDeRegraCadastrada.DeFormato(
+            "SomenteMaiusculas",
+            "SomenteMaiusculasInvalido",
+            Array.Empty<ParametroEsperado>(),
+            (valor, _) => Formatos.SomenteMaiusculas(valor),
+            (nomeCampo, _) => $"'{nomeCampo}' deve estar em letras maiúsculas.");
+
+        yield return ConstrutorDeRegraCadastrada.DeFormato(
+            "SomenteMinusculas",
+            "SomenteMinusculasInvalido",
+            Array.Empty<ParametroEsperado>(),
+            (valor, _) => Formatos.SomenteMinusculas(valor),
+            (nomeCampo, _) => $"'{nomeCampo}' deve estar em letras minúsculas.");
 
         yield return ConstrutorDeRegraCadastrada.DeFormato(
             "SemEspacoNasBordas",

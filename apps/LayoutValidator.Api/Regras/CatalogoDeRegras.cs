@@ -9,7 +9,9 @@ public sealed class CatalogoDeRegras : ICatalogoDeRegras
         var todas = RegrasDeTextoCatalogo.Construir()
             .Concat(RegrasNumericasCatalogo.Construir())
             .Concat(RegrasDeDocumentoCatalogo.Construir())
-            .Concat(RegrasDeDataCatalogo.Construir());
+            .Concat(RegrasDeDataCatalogo.Construir())
+            .Concat(RegrasFinanceirasCatalogo.Construir())
+            .Concat(RegrasDeContatoCatalogo.Construir());
 
         _regras = todas.ToDictionary(regra => regra.Chave, StringComparer.OrdinalIgnoreCase);
     }

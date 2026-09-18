@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 
 namespace LayoutValidator.Regras.Predicados;
 
@@ -143,6 +144,69 @@ public static class Formatos
         foreach (var caractere in valor)
         {
             if (!char.IsLetter(caractere) && caractere is not (' ' or '\'' or '-'))
+                return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Reprova qualquer letra acentuada ou com cedilha ("João", "ação"). Decompõe em NFD e
+    /// procura marca de combinação — pega acento de qualquer alfabeto, não só uma lista de
+    /// caracteres conhecidos. Existe pra arquivo que não carrega acento (banco, legado, EBCDIC).
+    /// </summary>
+    public static bool SemAcento(string? valor)
+    {
+        if (string.IsNullOrEmpty(valor))
+            return false;
+
+        string decomposto;
+
+        try
+        {
+            decomposto = valor.Normalize(NormalizationForm.FormD);
+        }
+        catch (ArgumentException)
+        {
+            // Surrogate solto não é Unicode válido e faz Normalize lançar. Predicado não pode
+            // lançar (ver PredicadosSaoTotaisTestes), e "sem acento" não é pergunta respondível
+            // pra um texto que nem é texto válido — reprova.
+            return false;
+        }
+
+        foreach (var caractere in decomposto)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(caractere) == UnicodeCategory.NonSpacingMark)
+                return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>Nenhuma letra minúscula. Dígito e pontuação não interferem ("NF-123" passa).</summary>
+    public static bool SomenteMaiusculas(string? valor)
+    {
+        if (string.IsNullOrEmpty(valor))
+            return false;
+
+        foreach (var caractere in valor)
+        {
+            if (char.IsLower(caractere))
+                return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>Nenhuma letra maiúscula. Dígito e pontuação não interferem ("nf-123" passa).</summary>
+    public static bool SomenteMinusculas(string? valor)
+    {
+        if (string.IsNullOrEmpty(valor))
+            return false;
+
+        foreach (var caractere in valor)
+        {
+            if (char.IsUpper(caractere))
                 return false;
         }
 

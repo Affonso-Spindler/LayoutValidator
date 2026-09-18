@@ -56,6 +56,40 @@ public class RegrasDeTextoCatalogoTestes
         Assert.Equal(esperado, Regras["SomenteLetras"].Avaliar(valor, null));
 
     [Theory]
+    [InlineData("ab", false)]
+    [InlineData("abc", true)]
+    [InlineData("abcdefgh", true)] // sem teto, ao contrário do ComprimentoEntre
+    [InlineData("", true)]
+    public void ComprimentoMinimo_NaoTemTetoEDeixaVazioPassar(string valor, bool esperado)
+    {
+        var parametros = Parametros("""{"minimo":3}""");
+        Assert.Equal(esperado, Regras["ComprimentoMinimo"].Avaliar(valor, parametros));
+    }
+
+    [Theory]
+    [InlineData("Jose", true)]
+    [InlineData("José", false)]
+    [InlineData("acao", true)]
+    [InlineData("ação", false)]
+    [InlineData("", true)]
+    public void SemAcento_ReprovaAcentoEDeixaVazioPassar(string valor, bool esperado) =>
+        Assert.Equal(esperado, Regras["SemAcento"].Avaliar(valor, null));
+
+    [Theory]
+    [InlineData("JOSE", true)]
+    [InlineData("Jose", false)]
+    [InlineData("", true)]
+    public void SomenteMaiusculas_ReprovaMinusculaEDeixaVazioPassar(string valor, bool esperado) =>
+        Assert.Equal(esperado, Regras["SomenteMaiusculas"].Avaliar(valor, null));
+
+    [Theory]
+    [InlineData("jose", true)]
+    [InlineData("Jose", false)]
+    [InlineData("", true)]
+    public void SomenteMinusculas_ReprovaMaiusculaEDeixaVazioPassar(string valor, bool esperado) =>
+        Assert.Equal(esperado, Regras["SomenteMinusculas"].Avaliar(valor, null));
+
+    [Theory]
     [InlineData("Maria", true)]
     [InlineData("Maria Silva", true)]
     [InlineData("A ", false)]

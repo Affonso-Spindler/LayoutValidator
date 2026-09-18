@@ -79,7 +79,7 @@ parâmetros cada regra espera.
 curl http://localhost:5000/regras
 ```
 
-Devolve as 24 regras disponíveis nesta v1, cada uma com os parâmetros que ela espera:
+Devolve as 35 regras disponíveis nesta v1, cada uma com os parâmetros que ela espera:
 
 ```json
 [
@@ -96,13 +96,16 @@ Devolve as 24 regras disponíveis nesta v1, cada uma com os parâmetros que ela 
 
 Esse é o mesmo endpoint que a tela de cadastro (`apps/LayoutValidator.Web`) usa pra montar os
 campos de parâmetro dinamicamente — nenhum parâmetro esperado é documentado só em
-código/README, tudo vem daqui. As 24 chaves cobrem o mesmo catálogo do código (ver
-[Regras Reutilizáveis](Regras-Reutilizaveis.md) pro equivalente em C#):
+código/README, tudo vem daqui. As 35 chaves cobrem o mesmo catálogo do código (ver
+[Regras Reutilizáveis](Regras-Reutilizaveis.md) pro equivalente em C#) — a paridade entre os dois
+é travada por teste, não por disciplina:
 
-`Obrigatorio`, `ComprimentoEntre`, `ComprimentoMaximo`, `ComprimentoExato`, `SomenteDigitos`,
-`SomenteLetras`, `SemEspacoNasBordas`, `ValorEm`, `Formato`, `Inteiro`, `InteiroEntre`, `Decimal`,
-`DecimalEntre`, `Cpf`, `Cnpj`, `CpfOuCnpj`, `Cep`, `Uf`, `Telefone`, `Cnh`, `PisPasep`, `Data`,
-`DataEntre`, `DataNoPassado`.
+`Obrigatorio`, `ComprimentoEntre`, `ComprimentoMinimo`, `ComprimentoMaximo`, `ComprimentoExato`,
+`SomenteDigitos`, `SomenteLetras`, `SemAcento`, `SomenteMaiusculas`, `SomenteMinusculas`,
+`SemEspacoNasBordas`, `ValorEm`, `Formato`, `Inteiro`, `InteiroPositivo`, `InteiroNaoNegativo`,
+`InteiroEntre`, `Decimal`, `DecimalPositivo`, `DecimalEntre`, `Cpf`, `Cnpj`, `CpfOuCnpj`, `Cep`,
+`Uf`, `Telefone`, `Cnh`, `PisPasep`, `Data`, `DataEntre`, `DataNoPassado`, `Moeda`, `Percentual`,
+`CartaoDeCredito`, `Email`.
 
 `SomenteLetras` aceita letras com acentuação (`João`) e a pontuação que aparece dentro de nome
 próprio: espaço (`Maria Silva`), apóstrofo (`A D'Marcas`) e hífen (`Maria-Clara`) — dígito e
@@ -111,8 +114,13 @@ na borda, combine com `SemEspacoNasBordas` no mesmo campo (que também pega tabu
 da última coluna de arquivo CRLF).
 
 `Data` e `DataEntre` aceitam um parâmetro opcional `formato` (padrão `dd/MM/yyyy`, no estilo
-.NET `DateTime` — ex.: `yyyy-MM-dd` pra ISO); `DataEntre` também exige `minimo` e `maximo` como
-texto nesse mesmo formato. `DataNoPassado` só aceita datas até hoje (inclusive).
+.NET `DateTime` — ex.: `yyyy-MM-dd` pra ISO, `HH:mm` pra coluna só de hora); `DataEntre` também
+exige `minimo` e `maximo` como texto nesse mesmo formato. `DataNoPassado` só aceita datas até
+hoje (inclusive).
+
+`Moeda` aceita um parâmetro opcional `casasDecimais` (padrão `2`) e é mais estrita que `Decimal`
+de propósito: exige as casas exatas e recusa separador de milhar (`1234,56` passa, `1.234,56`
+não) — é o formato que arquivo de carga costuma exigir.
 
 `ValorEm` espera `{ "valores": ["S", "N"] }` (lista de texto); `Formato` espera
 `{ "expressaoRegular": "...", "codigoErro": "...", "mensagem": "..." }` — é o escape hatch pra

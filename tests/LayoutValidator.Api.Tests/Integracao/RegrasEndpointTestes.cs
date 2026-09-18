@@ -11,13 +11,13 @@ public class RegrasEndpointTestes : IClassFixture<ApiFactoryDeTeste>
     public RegrasEndpointTestes(ApiFactoryDeTeste fabrica) => _cliente = fabrica.CreateClient();
 
     [Fact]
-    public async Task Get_ListaAs24RegrasDoCatalogo()
+    public async Task Get_ListaAs35RegrasDoCatalogo()
     {
         var resposta = await _cliente.GetAsync("/regras");
 
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
         var corpo = await resposta.Content.ReadFromJsonAsync<List<RegraDisponivelResponse>>();
-        Assert.Equal(24, corpo!.Count);
+        Assert.Equal(35, corpo!.Count);
     }
 
     [Fact]

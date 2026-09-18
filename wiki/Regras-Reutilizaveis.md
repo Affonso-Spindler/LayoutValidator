@@ -84,10 +84,14 @@ O código de erro é o que vira `NomeRegra` no `ErroValidacaoLayout` e o que o
 |---|---|---|
 | `Obrigatorio()` | `CampoObrigatorio` | qualquer coisa que não seja vazio nem só espaços |
 | `ComprimentoEntre(min, max)` | `ComprimentoInvalido` | comprimento dentro do intervalo |
+| `ComprimentoMinimo(min)` | `ComprimentoInvalido` | a partir de `min` caracteres, sem teto |
 | `ComprimentoMaximo(max)` | `ComprimentoInvalido` | até `max` caracteres |
 | `ComprimentoExato(n)` | `ComprimentoInvalido` | exatamente `n` caracteres |
 | `SomenteDigitos()` | `SomenteDigitosInvalido` | só `0`-`9`, sem sinal nem separador |
 | `SomenteLetras()` | `SomenteLetrasInvalido` | letras (com acentuação), espaço, apóstrofo e hífen |
+| `SemAcento()` | `AcentoNaoPermitido` | texto sem acento nem cedilha — pra arquivo legado |
+| `SomenteMaiusculas()` | `SomenteMaiusculasInvalido` | nenhuma minúscula; dígito e pontuação não interferem |
+| `SomenteMinusculas()` | `SomenteMinusculasInvalido` | nenhuma maiúscula; dígito e pontuação não interferem |
 | `SemEspacoNasBordas()` | `EspacoNasBordas` | sem espaço/tab/`\r` grudado no começo ou no fim |
 | `ValorEm("S", "N")` | `ValorForaDoDominio` | domínio fechado, ignorando caixa |
 | `Formato(regex, codigo, mensagem)` | o que você passar | escape hatch pra regra pontual |

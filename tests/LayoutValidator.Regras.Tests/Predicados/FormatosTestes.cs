@@ -146,6 +146,46 @@ public class FormatosTestes
         Assert.Equal(esperado, Formatos.SomenteLetras(valor));
 
     [Theory]
+    [InlineData("Jose", true)]
+    [InlineData("JOSE DA SILVA 123", true)] // dígito e espaço não são acento
+    [InlineData("José", false)]
+    [InlineData("ação", false)]
+    [InlineData("Ç", false)]                // cedilha conta
+    [InlineData("", false)]
+    [InlineData(null, false)]
+    public void SemAcento_ReprovaLetraAcentuadaOuCedilha(string? valor, bool esperado) =>
+        Assert.Equal(esperado, Formatos.SemAcento(valor));
+
+    [Fact]
+    public void SemAcento_TrataAcentoJaDecompostoIgualAoComposto()
+    {
+        // "José" com o acento como caractere de combinação separado (NFD) é o mesmo texto
+        // pro usuário — tem que reprovar igual à forma composta (NFC).
+        Assert.False(Formatos.SemAcento("José"));
+        Assert.False(Formatos.SemAcento("José"));
+    }
+
+    [Theory]
+    [InlineData("JOSE", true)]
+    [InlineData("NF-123", true)]  // dígito e pontuação não interferem
+    [InlineData("JOSé", false)]
+    [InlineData("jose", false)]
+    [InlineData("", false)]
+    [InlineData(null, false)]
+    public void SomenteMaiusculas_ReprovaQualquerMinuscula(string? valor, bool esperado) =>
+        Assert.Equal(esperado, Formatos.SomenteMaiusculas(valor));
+
+    [Theory]
+    [InlineData("jose", true)]
+    [InlineData("nf-123", true)]
+    [InlineData("joSe", false)]
+    [InlineData("JOSE", false)]
+    [InlineData("", false)]
+    [InlineData(null, false)]
+    public void SomenteMinusculas_ReprovaQualquerMaiuscula(string? valor, bool esperado) =>
+        Assert.Equal(esperado, Formatos.SomenteMinusculas(valor));
+
+    [Theory]
     [InlineData("Maria", true)]
     [InlineData("Maria Silva", true)]   // espaço no meio é problema de outra regra
     [InlineData("A ", false)]

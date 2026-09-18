@@ -31,11 +31,35 @@ public class RegrasNumericasCatalogoTestes
     }
 
     [Theory]
+    [InlineData("1", true)]
+    [InlineData("0", false)]
+    [InlineData("-1", false)]
+    [InlineData("", true)]
+    public void InteiroPositivo_ExigeMaiorQueZeroEDeixaVazioPassar(string valor, bool esperado) =>
+        Assert.Equal(esperado, Regras["InteiroPositivo"].Avaliar(valor, null));
+
+    [Theory]
+    [InlineData("0", true)]
+    [InlineData("1", true)]
+    [InlineData("-1", false)]
+    [InlineData("", true)]
+    public void InteiroNaoNegativo_AceitaZeroEDeixaVazioPassar(string valor, bool esperado) =>
+        Assert.Equal(esperado, Regras["InteiroNaoNegativo"].Avaliar(valor, null));
+
+    [Theory]
     [InlineData("1234,56", true)]
     [InlineData("1.234,56", false)]
     [InlineData("", true)]
     public void Decimal_AceitaFormatoBrasileiroOuVazio(string valor, bool esperado) =>
         Assert.Equal(esperado, Regras["Decimal"].Avaliar(valor, null));
+
+    [Theory]
+    [InlineData("0,01", true)]
+    [InlineData("0,00", false)]
+    [InlineData("-1,50", false)]
+    [InlineData("", true)]
+    public void DecimalPositivo_ExigeMaiorQueZeroEDeixaVazioPassar(string valor, bool esperado) =>
+        Assert.Equal(esperado, Regras["DecimalPositivo"].Avaliar(valor, null));
 
     [Theory]
     [InlineData("0,00", false)]

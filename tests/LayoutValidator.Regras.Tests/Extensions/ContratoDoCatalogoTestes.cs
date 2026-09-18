@@ -13,10 +13,14 @@ public class ContratoDoCatalogoTestes
     private static readonly (string Nome, Action<IRuleBuilder<RegistroTeste, string>> Configurar)[] RegrasDeFormato =
     {
         ("ComprimentoEntre", regra => regra.ComprimentoEntre(3, 5)),
+        ("ComprimentoMinimo", regra => regra.ComprimentoMinimo(3)),
         ("ComprimentoMaximo", regra => regra.ComprimentoMaximo(5)),
         ("ComprimentoExato", regra => regra.ComprimentoExato(5)),
         ("SomenteDigitos", regra => regra.SomenteDigitos()),
         ("SomenteLetras", regra => regra.SomenteLetras()),
+        ("SemAcento", regra => regra.SemAcento()),
+        ("SomenteMaiusculas", regra => regra.SomenteMaiusculas()),
+        ("SomenteMinusculas", regra => regra.SomenteMinusculas()),
         ("SemEspacoNasBordas", regra => regra.SemEspacoNasBordas()),
         ("ValorEm", regra => regra.ValorEm("S", "N")),
         ("Formato", regra => regra.Formato(@"^\d+$", "MeuCodigo", "Minha mensagem.")),
@@ -121,6 +125,9 @@ public class ContratoDoCatalogoTestes
         {
             ("SomenteDigitosInvalido", regra => regra.SomenteDigitos(), "12a"),
             ("SomenteLetrasInvalido", regra => regra.SomenteLetras(), "Maria2"),
+            ("AcentoNaoPermitido", regra => regra.SemAcento(), "José"),
+            ("SomenteMaiusculasInvalido", regra => regra.SomenteMaiusculas(), "Jose"),
+            ("SomenteMinusculasInvalido", regra => regra.SomenteMinusculas(), "JOSE"),
             ("EspacoNasBordas", regra => regra.SemEspacoNasBordas(), "Maria "),
             ("ValorForaDoDominio", regra => regra.ValorEm("S", "N"), "X"),
             ("MeuCodigo", regra => regra.Formato(@"^\d+$", "MeuCodigo", "Minha mensagem."), "abc"),

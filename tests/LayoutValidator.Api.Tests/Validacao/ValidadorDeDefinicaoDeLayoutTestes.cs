@@ -118,16 +118,33 @@ public class ValidadorDeDefinicaoDeLayoutTestes
             Assert.Contains(erros, e => e.Contains("Nascimento") && e.Contains("especificador"));
     }
 
-    [Fact]
-    public void Validar_AceitaFormatoDeDataValido()
+    [Theory]
+    [InlineData("yyyy-MM-dd")]
+    [InlineData("dd/MM/yyyy HH:mm:ss")]
+    [InlineData("HH:mm")] // coluna só de hora é cenário legítimo de arquivo
+    public void Validar_AceitaFormatoDeDataOuHoraValido(string formato)
     {
-        var parametros = JsonDocument.Parse("""{"formato":"yyyy-MM-dd"}""").RootElement;
+        var parametros = JsonDocument.Parse($$"""{"formato":"{{formato}}"}""").RootElement;
         var requisicao = new LayoutRequest("PESSOA1", "Pessoa", ";", new[]
         {
             new CampoRequest("Nascimento", new[] { new RegraCampoRequest("Data", parametros) })
         });
 
         Assert.Empty(ValidadorDeDefinicaoDeLayout.Validar(requisicao, _catalogo));
+    }
+
+    [Fact]
+    public void Validar_RejeitaCasasDecimaisNegativasEmMoeda()
+    {
+        var parametros = JsonDocument.Parse("""{"casasDecimais":-1}""").RootElement;
+        var requisicao = new LayoutRequest("PESSOA1", "Pessoa", ";", new[]
+        {
+            new CampoRequest("Valor", new[] { new RegraCampoRequest("Moeda", parametros) })
+        });
+
+        var erros = ValidadorDeDefinicaoDeLayout.Validar(requisicao, _catalogo);
+
+        Assert.Contains(erros, e => e.Contains("Valor") && e.Contains("casasDecimais"));
     }
 
     [Fact]

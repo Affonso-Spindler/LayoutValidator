@@ -15,6 +15,20 @@ internal static class RegrasNumericasCatalogo
             (nomeCampo, _) => $"'{nomeCampo}' deve ser um número inteiro.");
 
         yield return ConstrutorDeRegraCadastrada.DeFormato(
+            "InteiroPositivo",
+            "InteiroPositivoInvalido",
+            Array.Empty<ParametroEsperado>(),
+            (valor, _) => Formatos.InteiroEntre(valor, 1, long.MaxValue),
+            (nomeCampo, _) => $"'{nomeCampo}' deve ser um número inteiro positivo.");
+
+        yield return ConstrutorDeRegraCadastrada.DeFormato(
+            "InteiroNaoNegativo",
+            "InteiroNaoNegativoInvalido",
+            Array.Empty<ParametroEsperado>(),
+            (valor, _) => Formatos.InteiroEntre(valor, 0, long.MaxValue),
+            (nomeCampo, _) => $"'{nomeCampo}' deve ser um número inteiro maior ou igual a zero.");
+
+        yield return ConstrutorDeRegraCadastrada.DeFormato(
             "InteiroEntre",
             "InteiroForaDoIntervalo",
             new[]
@@ -31,6 +45,13 @@ internal static class RegrasNumericasCatalogo
             Array.Empty<ParametroEsperado>(),
             (valor, _) => Formatos.DecimalValido(valor),
             (nomeCampo, _) => $"'{nomeCampo}' deve ser um número decimal (vírgula como separador decimal).");
+
+        yield return ConstrutorDeRegraCadastrada.DeFormato(
+            "DecimalPositivo",
+            "DecimalPositivoInvalido",
+            Array.Empty<ParametroEsperado>(),
+            (valor, _) => Formatos.DecimalMaiorQue(valor, decimal.Zero),
+            (nomeCampo, _) => $"'{nomeCampo}' deve ser um número decimal positivo.");
 
         yield return ConstrutorDeRegraCadastrada.DeFormato(
             "DecimalEntre",

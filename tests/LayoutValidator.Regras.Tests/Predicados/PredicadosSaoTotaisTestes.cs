@@ -30,6 +30,7 @@ public class PredicadosSaoTotaisTestes
         "\0",
         "1e10",
         "0x1F",
+        "\uD800",  // surrogate solto: Unicode inválido, faz string.Normalize lançar
         new string('9', 5000)
     };
 
@@ -55,6 +56,9 @@ public class PredicadosSaoTotaisTestes
         _ = Formatos.MoedaValida(valor, 2);
         _ = Formatos.SomenteDigitos(valor);
         _ = Formatos.SomenteLetras(valor);
+        _ = Formatos.SemAcento(valor);
+        _ = Formatos.SomenteMaiusculas(valor);
+        _ = Formatos.SomenteMinusculas(valor);
         _ = Formatos.SemEspacoNasBordas(valor);
         _ = Formatos.ComprimentoEntre(valor, 1, 10);
 
