@@ -9,6 +9,12 @@ obj/
 # Claude Code local settings (machine-specific permissions)
 .claude/settings.local.json
 
+# Checkouts paralelos que o Claude Code cria pra trabalhar numa branch sem mexer no
+# diretório principal. São descartáveis (o trabalho vive na branch, não na pasta) e
+# carregam bin/obj junto — versionar não faria sentido, e sem isso todo worktree novo
+# aparece como untracked no git status.
+.claude/worktrees/
+
 # Saída do gerador de dados de teste — inteiramente recriável via
 # apps/LayoutValidator.GeradorDados (seed fixa = mesmo conteúdo sempre).
 # O CSV de 1M linhas tem ~210MB e não cabe num push normal do GitHub.
