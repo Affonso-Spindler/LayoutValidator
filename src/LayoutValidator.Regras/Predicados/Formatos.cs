@@ -126,6 +126,25 @@ public static class Formatos
         return true;
     }
 
+    /// <summary>
+    /// Letras (Unicode — inclui acentuação, ex.: "João") e espaço, e mais nada — dígito ou
+    /// pontuação reprova. Espaço entra de propósito: existe pra validar "Nome" e afins, onde
+    /// "somente letras" sem espaço reprovaria qualquer nome composto ("Maria Silva").
+    /// </summary>
+    public static bool SomenteLetras(string? valor)
+    {
+        if (string.IsNullOrEmpty(valor))
+            return false;
+
+        foreach (var caractere in valor)
+        {
+            if (!char.IsLetter(caractere) && caractere != ' ')
+                return false;
+        }
+
+        return true;
+    }
+
     public static bool ComprimentoEntre(string? valor, int minimo, int maximo)
     {
         var comprimento = valor?.Length ?? 0;

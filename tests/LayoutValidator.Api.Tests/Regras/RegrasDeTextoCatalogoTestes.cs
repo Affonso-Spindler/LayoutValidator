@@ -46,6 +46,14 @@ public class RegrasDeTextoCatalogoTestes
         Assert.Equal(esperado, Regras["SomenteDigitos"].Avaliar(valor, null));
 
     [Theory]
+    [InlineData("Maria Silva", true)]
+    [InlineData("João", true)]
+    [InlineData("Maria2", false)]
+    [InlineData("", true)] // regra de formato nunca reprova vazio
+    public void SomenteLetras_AceitaLetrasEEspacoOuVazio(string valor, bool esperado) =>
+        Assert.Equal(esperado, Regras["SomenteLetras"].Avaliar(valor, null));
+
+    [Theory]
     [InlineData("S", true)]
     [InlineData("n", true)]
     [InlineData("X", false)]

@@ -79,7 +79,7 @@ parâmetros cada regra espera.
 curl http://localhost:5000/regras
 ```
 
-Devolve as 22 regras disponíveis nesta v1, cada uma com os parâmetros que ela espera:
+Devolve as 23 regras disponíveis nesta v1, cada uma com os parâmetros que ela espera:
 
 ```json
 [
@@ -96,12 +96,15 @@ Devolve as 22 regras disponíveis nesta v1, cada uma com os parâmetros que ela 
 
 Esse é o mesmo endpoint que a tela de cadastro (`apps/LayoutValidator.Web`) usa pra montar os
 campos de parâmetro dinamicamente — nenhum parâmetro esperado é documentado só em
-código/README, tudo vem daqui. As 22 chaves cobrem o mesmo catálogo do código (ver
+código/README, tudo vem daqui. As 23 chaves cobrem o mesmo catálogo do código (ver
 [Regras Reutilizáveis](Regras-Reutilizaveis.md) pro equivalente em C#):
 
 `Obrigatorio`, `ComprimentoEntre`, `ComprimentoMaximo`, `ComprimentoExato`, `SomenteDigitos`,
-`ValorEm`, `Formato`, `Inteiro`, `InteiroEntre`, `Decimal`, `DecimalEntre`, `Cpf`, `Cnpj`,
-`CpfOuCnpj`, `Cep`, `Uf`, `Telefone`, `Cnh`, `PisPasep`, `Data`, `DataEntre`, `DataNoPassado`.
+`SomenteLetras`, `ValorEm`, `Formato`, `Inteiro`, `InteiroEntre`, `Decimal`, `DecimalEntre`, `Cpf`,
+`Cnpj`, `CpfOuCnpj`, `Cep`, `Uf`, `Telefone`, `Cnh`, `PisPasep`, `Data`, `DataEntre`, `DataNoPassado`.
+
+`SomenteLetras` aceita letras com acentuação (`João`) e espaço (pra nome composto, tipo
+`Maria Silva`) — dígito ou pontuação reprova.
 
 `Data` e `DataEntre` aceitam um parâmetro opcional `formato` (padrão `dd/MM/yyyy`, no estilo
 .NET `DateTime` — ex.: `yyyy-MM-dd` pra ISO); `DataEntre` também exige `minimo` e `maximo` como

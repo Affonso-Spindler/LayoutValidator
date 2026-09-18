@@ -43,6 +43,14 @@ public static class RegrasTextoExtensions
             "SomenteDigitosInvalido",
             "'{PropertyName}' deve conter somente dígitos.");
 
+    /// <summary>Aceita letras (com acentuação) e espaço — pensada pra campos como "Nome".</summary>
+    public static IRuleBuilderOptions<T, string> SomenteLetras<T>(this IRuleBuilder<T, string> regra) =>
+        ConstrutorRegra.DeFormato(
+            regra,
+            Formatos.SomenteLetras,
+            "SomenteLetrasInvalido",
+            "'{PropertyName}' deve conter somente letras.");
+
     /// <summary>Domínio fechado de valores aceitos, ignorando caixa — ex: <c>ValorEm("S", "N")</c>.</summary>
     public static IRuleBuilderOptions<T, string> ValorEm<T>(this IRuleBuilder<T, string> regra, params string[] aceitos)
     {

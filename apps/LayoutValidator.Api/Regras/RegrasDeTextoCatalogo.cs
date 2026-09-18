@@ -57,6 +57,13 @@ internal static class RegrasDeTextoCatalogo
             (nomeCampo, _) => $"'{nomeCampo}' deve conter somente dígitos.");
 
         yield return ConstrutorDeRegraCadastrada.DeFormato(
+            "SomenteLetras",
+            "SomenteLetrasInvalido",
+            Array.Empty<ParametroEsperado>(),
+            (valor, _) => Formatos.SomenteLetras(valor),
+            (nomeCampo, _) => $"'{nomeCampo}' deve conter somente letras.");
+
+        yield return ConstrutorDeRegraCadastrada.DeFormato(
             "ValorEm",
             "ValorForaDoDominio",
             new[] { new ParametroEsperado("valores", TipoParametro.ListaDeTexto, true) },

@@ -54,6 +54,7 @@ public class PredicadosSaoTotaisTestes
         _ = Formatos.DecimalEntre(valor, 0, 100);
         _ = Formatos.MoedaValida(valor, 2);
         _ = Formatos.SomenteDigitos(valor);
+        _ = Formatos.SomenteLetras(valor);
         _ = Formatos.ComprimentoEntre(valor, 1, 10);
 
         _ = UnidadesFederativas.Valida(valor);

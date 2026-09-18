@@ -16,6 +16,7 @@ public class ContratoDoCatalogoTestes
         ("ComprimentoMaximo", regra => regra.ComprimentoMaximo(5)),
         ("ComprimentoExato", regra => regra.ComprimentoExato(5)),
         ("SomenteDigitos", regra => regra.SomenteDigitos()),
+        ("SomenteLetras", regra => regra.SomenteLetras()),
         ("ValorEm", regra => regra.ValorEm("S", "N")),
         ("Formato", regra => regra.Formato(@"^\d+$", "MeuCodigo", "Minha mensagem.")),
         ("Inteiro", regra => regra.Inteiro()),
@@ -118,6 +119,7 @@ public class ContratoDoCatalogoTestes
         var esperados = new (string Codigo, Action<IRuleBuilder<RegistroTeste, string>> Configurar, string ValorInvalido)[]
         {
             ("SomenteDigitosInvalido", regra => regra.SomenteDigitos(), "12a"),
+            ("SomenteLetrasInvalido", regra => regra.SomenteLetras(), "Maria2"),
             ("ValorForaDoDominio", regra => regra.ValorEm("S", "N"), "X"),
             ("MeuCodigo", regra => regra.Formato(@"^\d+$", "MeuCodigo", "Minha mensagem."), "abc"),
             ("InteiroInvalido", regra => regra.Inteiro(), "abc"),

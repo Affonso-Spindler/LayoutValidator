@@ -131,6 +131,17 @@ public class FormatosTestes
     public void SomenteDigitos_AceitaApenasDigitos(string? valor, bool esperado) =>
         Assert.Equal(esperado, Formatos.SomenteDigitos(valor));
 
+    [Theory]
+    [InlineData("Maria", true)]
+    [InlineData("Maria Silva", true)]     // espaço entra de propósito — nome composto
+    [InlineData("João", true)]            // acentuação conta como letra
+    [InlineData("Maria2", false)]
+    [InlineData("Maria-Silva", false)]    // hífen não é letra nem espaço
+    [InlineData("", false)]
+    [InlineData(null, false)]
+    public void SomenteLetras_AceitaLetrasUnicodeEEspaco(string? valor, bool esperado) =>
+        Assert.Equal(esperado, Formatos.SomenteLetras(valor));
+
     [Fact]
     public void ComprimentoEntre_TrataNuloComoComprimentoZero()
     {
