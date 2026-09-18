@@ -20,7 +20,8 @@ Esta wiki é focada em **como usar e como estender** no dia a dia.
   UF, moeda...) e como escrever as suas próprias.
 - [Cadastro de Layouts via API](Cadastro-de-Layouts-via-API.md) — caminho alternativo ao
   layout-como-código: cadastra layout num banco e valida uma linha por HTTP, sem escrever
-  classe C# nenhuma.
+  classe C# nenhuma. Tem uma tela web (`apps/LayoutValidator.Web`) por cima dessa API, pra
+  quem prefere não falar HTTP na mão.
 - [Possibilidades](Possibilidades.md) — o que a lib não faz hoje e caminhos possíveis
   pra evoluir.
 
@@ -41,6 +42,7 @@ apps/LayoutValidator.LayoutFuncionario/  layout de referência maior — "Funcio
 apps/LayoutValidator.GeradorDados/       gera arquivo CSV de teste com erros diversos
 apps/LayoutValidator.TesteApp/           app WinForms pra validar qualquer .csv/.txt na mão
 apps/LayoutValidator.Api/                API local: cadastra layout em banco, valida por HTTP
+apps/LayoutValidator.Web/                tela Angular por cima da API: cadastra, lista e testa layout
 tests/LayoutValidator.Api.Tests/         testes xUnit do app de cadastro
 dados-teste/                             saída do gerador (não versionado; recriável a qualquer momento)
 wiki/                                    você está aqui

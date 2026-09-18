@@ -292,6 +292,9 @@ LayoutValidator.sln
     Validacao/                             DivisorDeLinha, AvaliadorDeCampo, ValidadorDeDefinicaoDeLayout
     Contratos/                             DTOs de request/response + MapeadorDeLayout
     Endpoints/                             LayoutsEndpoints, RegrasEndpoints, ValidacaoEndpoints
+  apps/LayoutValidator.Web/                tela Angular consumindo a API acima (cadastrar/listar/testar layout)
+    src/app/services/                      um service por endpoint (layouts, regras, validacao)
+    src/app/components/                    layout-form (cadastro/edicao), layout-list, layout-test
   tests/LayoutValidator.Api.Tests/         xUnit do app de cadastro (unidade + integracao via WebApplicationFactory)
   dados-teste/                             saída do gerador (não versionado — ver .gitignore)
   wiki/                                    guia de uso, como criar layouts, possibilidades futuras
@@ -331,6 +334,14 @@ Com `LayoutValidator.Api` rodando, a documentação interativa (Swagger UI) fica
 `http://localhost:5000/swagger` — lista todos os endpoints, os schemas de request/response e
 permite testar chamadas direto do navegador. Sempre habilitada (não só em `Development`), já
 que a API é local por natureza (sem autenticação, ver ADR-0002).
+
+A tela web fica em `http://localhost:4200` e **depende da API estar no ar** na porta 5000 (é de
+lá que vêm o catálogo de regras e os layouts):
+
+```bash
+npm --prefix apps/LayoutValidator.Web install   # só na primeira vez
+npm --prefix apps/LayoutValidator.Web start
+```
 
 ## Pontos em aberto para o futuro
 

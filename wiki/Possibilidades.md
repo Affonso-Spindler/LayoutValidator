@@ -70,6 +70,21 @@ vale um terceiro "consumidor" da lib: um console app que recebe caminho do arqui
 qual layout usar por parâmetro, e retorna exit code não-zero se houver registro
 inválido — encaixa no mesmo padrão dos outros apps em `apps/`.
 
+## Validar arquivo/lote pela API
+
+A [API de layouts cadastrados](Cadastro-de-Layouts-via-API.md) valida **uma linha por
+chamada** (`POST /layouts/{codigo}/validar`) — validar um arquivo inteiro por ali está fora
+do escopo da v1 (ver [ADR-0002](../docs/adr/0002-cadastro-de-layouts-via-api-local.md)). A
+tela em `apps/LayoutValidator.Web` contorna isso no cliente, quebrando o texto colado em
+linhas e chamando o endpoint uma vez por linha — resolve pra conferir um punhado de linhas
+na mão, mas não pra arquivo de verdade.
+
+Se virar necessidade, o caminho não é repetir a chamada mais rápido: é um endpoint que
+receba o arquivo (multipart) e devolva o `ResumoValidacaoLayout` — reaproveitando o motor
+de streaming do core em vez do avaliador linha a linha da API. Aí aparecem as perguntas
+que a v1 não precisou responder: upload síncrono ou job assíncrono com status, e o que
+devolver quando o arquivo tem milhões de erros (o resumo? o CSV de erros? um link?).
+
 ## Histórico de qualidade de dados
 
 O `ResumoValidacaoLayout` hoje vive só durante uma execução. Se for útil acompanhar ao

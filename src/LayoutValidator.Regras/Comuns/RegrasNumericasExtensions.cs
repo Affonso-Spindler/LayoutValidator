@@ -33,7 +33,10 @@ public static class RegrasNumericasExtensions
             "InteiroForaDoIntervalo",
             $"'{{PropertyName}}' deve ser um inteiro entre {minimo} e {maximo}.");
 
-    /// <summary>Decimal no padrão brasileiro: vírgula decimal, ponto opcional como separador de milhar.</summary>
+    /// <summary>
+    /// Decimal no padrão brasileiro: vírgula decimal e <b>sem</b> separador de milhar —
+    /// "1234,56" passa, "1.234,56" não. O porquê está em <see cref="Formatos.DecimalValido"/>.
+    /// </summary>
     public static IRuleBuilderOptions<T, string> Decimal<T>(this IRuleBuilder<T, string> regra) =>
         ConstrutorRegra.DeFormato(
             regra,

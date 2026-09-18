@@ -1,59 +1,50 @@
-# LayoutValidatorWeb
+# LayoutValidator.Web
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.1.5.
+Tela Angular pra cadastrar, listar e testar layouts sem escrever classe C# nenhuma — é a
+interface do caminho "layout cadastrado" descrito em
+[Cadastro de Layouts via API](../../wiki/Cadastro-de-Layouts-via-API.md).
 
-## Development server
-
-To start a local development server, run:
-
-```bash
-ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+**Ela não valida nada sozinha.** Toda regra, validação e persistência vive em
+`apps/LayoutValidator.Api`; aqui só tem formulário, listagem e apresentação de erro. Por
+isso a API precisa estar no ar, em `http://localhost:5000`:
 
 ```bash
-ng generate component component-name
+# terminal 1 — a API (cria/migra o SQLite sozinha no startup)
+dotnet run --project ../LayoutValidator.Api/LayoutValidator.Api.csproj
+
+# terminal 2 — a tela
+npm install    # só na primeira vez
+npm start      # http://localhost:4200
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+A URL da API fica em [`src/app/api-base-url.ts`](src/app/api-base-url.ts). Ela é liberada no
+CORS da API só pra `http://localhost:4200` — se mudar a porta do dev server, tem que mudar lá
+também (`Program.cs`).
+
+## As três abas
+
+| Aba | O que faz |
+|---|---|
+| **Cadastrar** | monta o layout: código, nome, delimitador e os campos, cada um com N regras |
+| **Listar** | tabela dos layouts cadastrados, com editar e remover |
+| **Testar** | escolhe um layout, cola uma ou mais linhas e vê o resultado linha a linha |
+
+O formulário de cadastro **não tem lista de regras hardcoded**: ele monta o dropdown e os
+campos de parâmetro a partir do `GET /regras`. Regra nova no catálogo da API aparece aqui
+sozinha, sem mexer neste projeto — inclusive os parâmetros dela (`minimo`, `formato`,
+`casasDecimais`...), que são renderizados conforme o tipo que a API declara.
+
+Na aba Testar, o `POST /layouts/{codigo}/validar` da API valida **uma linha por chamada** —
+colar várias linhas dispara uma chamada por linha. Serve pra conferir algumas linhas na mão,
+não pra arquivo grande (ver
+[Possibilidades](../../wiki/Possibilidades.md#validar-arquivolote-pela-api)).
+
+## Comandos
 
 ```bash
-ng generate --help
+npm start           # dev server em http://localhost:4200
+npm run build       # build de produção em dist/
+npm test            # testes unitários (Vitest)
 ```
 
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Gerado com Angular CLI 22, standalone components + Angular Material.

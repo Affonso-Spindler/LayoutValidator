@@ -192,6 +192,12 @@ que quiser.
 dotnet run --project apps/LayoutValidator.TesteApp/LayoutValidator.TesteApp.csproj
 ```
 
+Esse app valida **arquivo inteiro** contra um layout que é código C#. Se o que você quer é
+o contrário — montar o layout sem escrever classe nenhuma e testar uma linha avulsa — o
+caminho é a tela em `apps/LayoutValidator.Web`, descrita em
+[Cadastro de Layouts via API](Cadastro-de-Layouts-via-API.md). Os dois coexistem de
+propósito: um é o caminho "layout como código", o outro é o "layout cadastrado".
+
 ## 8. Gerando um arquivo de teste grande
 
 `apps/LayoutValidator.GeradorDados` gera um CSV com o layout `Funcionario`, misturando

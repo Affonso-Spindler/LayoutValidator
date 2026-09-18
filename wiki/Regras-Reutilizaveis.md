@@ -104,9 +104,14 @@ O código de erro é o que vira `NomeRegra` no `ErroValidacaoLayout` e o que o
 | `InteiroPositivo()` | `InteiroPositivoInvalido` | inteiro `>= 1` |
 | `InteiroNaoNegativo()` | `InteiroNaoNegativoInvalido` | inteiro `>= 0` |
 | `InteiroEntre(min, max)` | `InteiroForaDoIntervalo` | inteiro no intervalo, inclusive |
-| `Decimal()` | `DecimalInvalido` | `1234,56` e `1.234,56` (padrão brasileiro) |
+| `Decimal()` | `DecimalInvalido` | `1234,56` — vírgula decimal, **sem** separador de milhar |
 | `DecimalPositivo()` | `DecimalPositivoInvalido` | decimal `> 0` |
 | `DecimalEntre(min, max)` | `DecimalForaDoIntervalo` | decimal no intervalo, inclusive |
+
+Separador de milhar (`1.234,56`) **reprova, de propósito** — e essa é a decisão menos óbvia do
+catálogo. O Mapper típico faz `Replace(',', '.')` e parseia com `InvariantCulture`: ali `"1.00"`
+vale 1, enquanto em pt-BR valeria 100. Aceitar o ponto deixaria passar um valor que chega
+diferente no banco — pior que um valor recusado.
 
 ### Data
 
