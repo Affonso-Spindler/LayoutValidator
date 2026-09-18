@@ -145,6 +145,19 @@ public class FormatosTestes
     public void SomenteLetras_AceitaLetrasUnicodeEPontuacaoDeNome(string? valor, bool esperado) =>
         Assert.Equal(esperado, Formatos.SomenteLetras(valor));
 
+    [Theory]
+    [InlineData("Maria", true)]
+    [InlineData("Maria Silva", true)]   // espaço no meio é problema de outra regra
+    [InlineData("A ", false)]
+    [InlineData(" A", false)]
+    [InlineData("Maria\t", false)]      // tabulação também é espaço em branco
+    [InlineData("Maria\r", false)]      // \r que sobra na última coluna de arquivo CRLF
+    [InlineData("   ", false)]
+    [InlineData("", false)]
+    [InlineData(null, false)]
+    public void SemEspacoNasBordas_ReprovaEspacoNoComecoOuNoFim(string? valor, bool esperado) =>
+        Assert.Equal(esperado, Formatos.SemEspacoNasBordas(valor));
+
     [Fact]
     public void ComprimentoEntre_TrataNuloComoComprimentoZero()
     {

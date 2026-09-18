@@ -56,6 +56,16 @@ public class RegrasDeTextoCatalogoTestes
         Assert.Equal(esperado, Regras["SomenteLetras"].Avaliar(valor, null));
 
     [Theory]
+    [InlineData("Maria", true)]
+    [InlineData("Maria Silva", true)]
+    [InlineData("A ", false)]
+    [InlineData(" A", false)]
+    [InlineData("", true)]    // regra de formato nunca reprova vazio
+    [InlineData("   ", true)] // idem — valor só com espaço é caso do Obrigatorio
+    public void SemEspacoNasBordas_ReprovaEspacoNasPontasEDeixaVazioPassar(string valor, bool esperado) =>
+        Assert.Equal(esperado, Regras["SemEspacoNasBordas"].Avaliar(valor, null));
+
+    [Theory]
     [InlineData("S", true)]
     [InlineData("n", true)]
     [InlineData("X", false)]

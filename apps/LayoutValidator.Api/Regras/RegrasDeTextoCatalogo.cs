@@ -64,6 +64,13 @@ internal static class RegrasDeTextoCatalogo
             (nomeCampo, _) => $"'{nomeCampo}' deve conter somente letras, espaço, apóstrofo ou hífen.");
 
         yield return ConstrutorDeRegraCadastrada.DeFormato(
+            "SemEspacoNasBordas",
+            "EspacoNasBordas",
+            Array.Empty<ParametroEsperado>(),
+            (valor, _) => Formatos.SemEspacoNasBordas(valor),
+            (nomeCampo, _) => $"'{nomeCampo}' não pode começar nem terminar com espaço.");
+
+        yield return ConstrutorDeRegraCadastrada.DeFormato(
             "ValorEm",
             "ValorForaDoDominio",
             new[] { new ParametroEsperado("valores", TipoParametro.ListaDeTexto, true) },

@@ -53,6 +53,17 @@ public static class RegrasTextoExtensions
             "SomenteLetrasInvalido",
             "'{PropertyName}' deve conter somente letras, espaço, apóstrofo ou hífen.");
 
+    /// <summary>
+    /// Reprova espaço sobrando no começo ou no fim do valor — inclusive tabulação e o
+    /// <c>\r</c> que sobra na última coluna de arquivo CRLF.
+    /// </summary>
+    public static IRuleBuilderOptions<T, string> SemEspacoNasBordas<T>(this IRuleBuilder<T, string> regra) =>
+        ConstrutorRegra.DeFormato(
+            regra,
+            Formatos.SemEspacoNasBordas,
+            "EspacoNasBordas",
+            "'{PropertyName}' não pode começar nem terminar com espaço.");
+
     /// <summary>Domínio fechado de valores aceitos, ignorando caixa — ex: <c>ValorEm("S", "N")</c>.</summary>
     public static IRuleBuilderOptions<T, string> ValorEm<T>(this IRuleBuilder<T, string> regra, params string[] aceitos)
     {

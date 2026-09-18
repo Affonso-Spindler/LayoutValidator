@@ -17,6 +17,7 @@ public class ContratoDoCatalogoTestes
         ("ComprimentoExato", regra => regra.ComprimentoExato(5)),
         ("SomenteDigitos", regra => regra.SomenteDigitos()),
         ("SomenteLetras", regra => regra.SomenteLetras()),
+        ("SemEspacoNasBordas", regra => regra.SemEspacoNasBordas()),
         ("ValorEm", regra => regra.ValorEm("S", "N")),
         ("Formato", regra => regra.Formato(@"^\d+$", "MeuCodigo", "Minha mensagem.")),
         ("Inteiro", regra => regra.Inteiro()),
@@ -120,6 +121,7 @@ public class ContratoDoCatalogoTestes
         {
             ("SomenteDigitosInvalido", regra => regra.SomenteDigitos(), "12a"),
             ("SomenteLetrasInvalido", regra => regra.SomenteLetras(), "Maria2"),
+            ("EspacoNasBordas", regra => regra.SemEspacoNasBordas(), "Maria "),
             ("ValorForaDoDominio", regra => regra.ValorEm("S", "N"), "X"),
             ("MeuCodigo", regra => regra.Formato(@"^\d+$", "MeuCodigo", "Minha mensagem."), "abc"),
             ("InteiroInvalido", regra => regra.Inteiro(), "abc"),

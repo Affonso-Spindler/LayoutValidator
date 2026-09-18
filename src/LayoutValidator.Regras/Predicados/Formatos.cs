@@ -149,6 +149,23 @@ public static class Formatos
         return true;
     }
 
+    /// <summary>
+    /// Reprova espaço em branco grudado no começo ou no fim ("A " ou " A"). Qualquer
+    /// whitespace conta, não só o espaço comum — tabulação e o <c>\r</c> que sobra na última
+    /// coluna de arquivo CRLF são os casos que mais aparecem na prática.
+    ///
+    /// Valor só com espaço não chega aqui pelo caminho da regra: <c>ConstrutorRegra.DeFormato</c>
+    /// deixa vazio passar antes (só <c>Obrigatorio()</c> reprova vazio). Chamado direto, o
+    /// predicado responde false — é o que dá pra dizer com honestidade sobre " ".
+    /// </summary>
+    public static bool SemEspacoNasBordas(string? valor)
+    {
+        if (string.IsNullOrEmpty(valor))
+            return false;
+
+        return !char.IsWhiteSpace(valor[0]) && !char.IsWhiteSpace(valor[^1]);
+    }
+
     public static bool ComprimentoEntre(string? valor, int minimo, int maximo)
     {
         var comprimento = valor?.Length ?? 0;

@@ -7,13 +7,13 @@ public class CatalogoDeRegrasTestes
     private static readonly string[] ChavesEsperadas =
     {
         "Obrigatorio", "ComprimentoEntre", "ComprimentoMaximo", "ComprimentoExato",
-        "SomenteDigitos", "SomenteLetras", "ValorEm", "Formato", "Inteiro", "InteiroEntre", "Decimal",
-        "DecimalEntre", "Cpf", "Cnpj", "CpfOuCnpj", "Cep", "Uf", "Telefone", "Cnh", "PisPasep",
-        "Data", "DataEntre", "DataNoPassado"
+        "SomenteDigitos", "SomenteLetras", "SemEspacoNasBordas", "ValorEm", "Formato", "Inteiro",
+        "InteiroEntre", "Decimal", "DecimalEntre", "Cpf", "Cnpj", "CpfOuCnpj", "Cep", "Uf",
+        "Telefone", "Cnh", "PisPasep", "Data", "DataEntre", "DataNoPassado"
     };
 
     [Fact]
-    public void Todas_ContemExatamenteAs23ChavesDaV1()
+    public void Todas_ContemExatamenteAs24ChavesDaV1()
     {
         var catalogo = new CatalogoDeRegras();
         var chaves = catalogo.Todas.Select(r => r.Chave).ToArray();
