@@ -1,18 +1,21 @@
 # LayoutValidator
 
 Biblioteca C# (.NET 8) para validar arquivos delimitados (CSV, pipe, etc.) contra um
-layout declarado, antes de qualquer carga em banco. Detecta campo fora do formato
-esperado (data, inteiro, regex, etc.) e devolve um relatório de quais linhas/campos
-estão fora da especificação — sem precisar chegar no `COPY` do banco pra descobrir isso.
+layout declarado. Detecta campo fora do formato esperado (data, inteiro, regex, etc.) e
+devolve um relatório de quais linhas/campos estão fora da especificação — antes de
+qualquer consumidor downstream (carga em banco, chamada de API, outro sistema) precisar
+lidar com dado ruim.
 
 Pra guia de uso e tutoriais, ver a [wiki](wiki/Home.md). Este README fica focado nas
 decisões de arquitetura.
 
 ## Contexto / motivação
 
-Hoje não existe validação de layout antes da carga — o único sinal de "arquivo fora do
-padrão" é o erro do `COPY` no momento em que o arquivo já está sendo inserido no banco.
-Esta biblioteca existe para pegar isso antes, de forma reutilizável entre projetos.
+Nasceu de um problema concreto: o único sinal de "arquivo fora do padrão" era o erro do
+`COPY` no banco, com o arquivo já em carga. Mas o problema em si não é específico de
+banco — é confiar em dado externo sem checar contra um contrato antes. Por isso a
+biblioteca é uma ferramenta genérica de validação de layout, reutilizável em qualquer
+projeto que receba arquivo ou dado externo, com banco ou sem.
 
 ## Decisões de escopo (v1)
 
