@@ -1,10 +1,10 @@
 # LayoutValidator — Wiki
 
 Biblioteca C# (.NET 8) para validar arquivos delimitados (CSV, pipe, etc.) contra um
-layout declarado, antes de qualquer carga em banco. Detecta campo fora do formato
-esperado (data, inteiro, regex, obrigatoriedade, etc.) e devolve um relatório de quais
-linhas/campos estão fora da especificação — sem precisar chegar no `COPY` do banco pra
-descobrir isso.
+layout declarado. Detecta campo fora do formato esperado (data, inteiro, regex,
+obrigatoriedade, etc.) e devolve um relatório de quais linhas/campos estão fora da
+especificação — antes de qualquer consumidor downstream (carga em banco, chamada de
+API, outro sistema) precisar lidar com dado ruim.
 
 Para o resumo de decisões de arquitetura (por que dois Models por layout, streaming,
 tratamento de linha quebrada, DI), ver o [README.md](../README.md) na raiz do repo.
