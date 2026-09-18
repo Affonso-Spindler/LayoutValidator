@@ -8,11 +8,12 @@ public class CatalogoDeRegrasTestes
     {
         "Obrigatorio", "ComprimentoEntre", "ComprimentoMaximo", "ComprimentoExato",
         "SomenteDigitos", "ValorEm", "Formato", "Inteiro", "InteiroEntre", "Decimal",
-        "DecimalEntre", "Cpf", "Cnpj", "CpfOuCnpj", "Cep", "Uf", "Telefone", "Cnh", "PisPasep"
+        "DecimalEntre", "Cpf", "Cnpj", "CpfOuCnpj", "Cep", "Uf", "Telefone", "Cnh", "PisPasep",
+        "Data", "DataEntre", "DataNoPassado"
     };
 
     [Fact]
-    public void Todas_ContemExatamenteAs19ChavesDaV1()
+    public void Todas_ContemExatamenteAs22ChavesDaV1()
     {
         var catalogo = new CatalogoDeRegras();
         var chaves = catalogo.Todas.Select(r => r.Chave).ToArray();

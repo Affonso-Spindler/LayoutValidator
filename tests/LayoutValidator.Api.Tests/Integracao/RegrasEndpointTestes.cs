@@ -11,13 +11,13 @@ public class RegrasEndpointTestes : IClassFixture<ApiFactoryDeTeste>
     public RegrasEndpointTestes(ApiFactoryDeTeste fabrica) => _cliente = fabrica.CreateClient();
 
     [Fact]
-    public async Task Get_ListaAs19RegrasDoCatalogo()
+    public async Task Get_ListaAs22RegrasDoCatalogo()
     {
         var resposta = await _cliente.GetAsync("/regras");
 
         Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
         var corpo = await resposta.Content.ReadFromJsonAsync<List<RegraDisponivelResponse>>();
-        Assert.Equal(19, corpo!.Count);
+        Assert.Equal(22, corpo!.Count);
     }
 
     [Fact]
@@ -31,5 +31,17 @@ public class RegrasEndpointTestes : IClassFixture<ApiFactoryDeTeste>
         Assert.Equal(2, inteiroEntre.ParametrosEsperados.Count);
         Assert.Contains(inteiroEntre.ParametrosEsperados, p => p.Nome == "minimo" && p.Obrigatorio);
         Assert.Contains(inteiroEntre.ParametrosEsperados, p => p.Nome == "maximo" && p.Obrigatorio);
+    }
+
+    [Fact]
+    public async Task Get_DescreveOsParametrosEsperadosDeData()
+    {
+        var resposta = await _cliente.GetAsync("/regras");
+        var corpo = await resposta.Content.ReadFromJsonAsync<List<RegraDisponivelResponse>>();
+
+        var data = corpo!.Single(r => r.Chave == "Data");
+
+        Assert.Equal(1, data.ParametrosEsperados.Count);
+        Assert.Contains(data.ParametrosEsperados, p => p.Nome == "formato" && !p.Obrigatorio);
     }
 }

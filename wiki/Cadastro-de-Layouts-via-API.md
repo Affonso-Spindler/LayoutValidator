@@ -79,7 +79,7 @@ parâmetros cada regra espera.
 curl http://localhost:5000/regras
 ```
 
-Devolve as 19 regras disponíveis nesta v1, cada uma com os parâmetros que ela espera:
+Devolve as 22 regras disponíveis nesta v1, cada uma com os parâmetros que ela espera:
 
 ```json
 [
@@ -94,14 +94,18 @@ Devolve as 19 regras disponíveis nesta v1, cada uma com os parâmetros que ela 
 ]
 ```
 
-Esse é o mesmo endpoint que uma futura tela de cadastro usaria pra montar os campos de
-parâmetro dinamicamente — nenhum parâmetro esperado é documentado só em código/README, tudo
-vem daqui. As 19 chaves cobrem o mesmo catálogo do código (ver
+Esse é o mesmo endpoint que a tela de cadastro (`apps/LayoutValidator.Web`) usa pra montar os
+campos de parâmetro dinamicamente — nenhum parâmetro esperado é documentado só em
+código/README, tudo vem daqui. As 22 chaves cobrem o mesmo catálogo do código (ver
 [Regras Reutilizáveis](Regras-Reutilizaveis.md) pro equivalente em C#):
 
 `Obrigatorio`, `ComprimentoEntre`, `ComprimentoMaximo`, `ComprimentoExato`, `SomenteDigitos`,
 `ValorEm`, `Formato`, `Inteiro`, `InteiroEntre`, `Decimal`, `DecimalEntre`, `Cpf`, `Cnpj`,
-`CpfOuCnpj`, `Cep`, `Uf`, `Telefone`, `Cnh`, `PisPasep`.
+`CpfOuCnpj`, `Cep`, `Uf`, `Telefone`, `Cnh`, `PisPasep`, `Data`, `DataEntre`, `DataNoPassado`.
+
+`Data` e `DataEntre` aceitam um parâmetro opcional `formato` (padrão `dd/MM/yyyy`, no estilo
+.NET `DateTime` — ex.: `yyyy-MM-dd` pra ISO); `DataEntre` também exige `minimo` e `maximo` como
+texto nesse mesmo formato. `DataNoPassado` só aceita datas até hoje (inclusive).
 
 `ValorEm` espera `{ "valores": ["S", "N"] }` (lista de texto); `Formato` espera
 `{ "expressaoRegular": "...", "codigoErro": "...", "mensagem": "..." }` — é o escape hatch pra

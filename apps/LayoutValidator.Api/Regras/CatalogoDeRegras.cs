@@ -8,7 +8,8 @@ public sealed class CatalogoDeRegras : ICatalogoDeRegras
     {
         var todas = RegrasDeTextoCatalogo.Construir()
             .Concat(RegrasNumericasCatalogo.Construir())
-            .Concat(RegrasDeDocumentoCatalogo.Construir());
+            .Concat(RegrasDeDocumentoCatalogo.Construir())
+            .Concat(RegrasDeDataCatalogo.Construir());
 
         _regras = todas.ToDictionary(regra => regra.Chave, StringComparer.OrdinalIgnoreCase);
     }
