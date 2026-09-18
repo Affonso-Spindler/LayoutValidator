@@ -87,4 +87,61 @@ public class ValidadorDeDefinicaoDeLayoutTestes
 
         Assert.Empty(ValidadorDeDefinicaoDeLayout.Validar(requisicao, _catalogo));
     }
+
+    [Fact]
+    public void Validar_AceitaRegraDeDataSemFormatoInformado()
+    {
+        var requisicao = new LayoutRequest("PESSOA1", "Pessoa", ";", new[]
+        {
+            new CampoRequest("Nascimento", new[] { new RegraCampoRequest("Data", null) })
+        });
+
+        Assert.Empty(ValidadorDeDefinicaoDeLayout.Validar(requisicao, _catalogo));
+    }
+
+    [Theory]
+    [InlineData("22222222222")] // sem nenhum especificador de data real (y, M ou d)
+    [InlineData("")]
+    public void Validar_RejeitaFormatoDeDataSemEspecificadores(string formato)
+    {
+        var parametros = JsonDocument.Parse($$"""{"formato":"{{formato}}"}""").RootElement;
+        var requisicao = new LayoutRequest("PESSOA1", "Pessoa", ";", new[]
+        {
+            new CampoRequest("Nascimento", new[] { new RegraCampoRequest("Data", parametros) })
+        });
+
+        var erros = ValidadorDeDefinicaoDeLayout.Validar(requisicao, _catalogo);
+
+        if (string.IsNullOrEmpty(formato))
+            Assert.Empty(erros); // formato em branco é "não informado" — usa o padrão, não é erro
+        else
+            Assert.Contains(erros, e => e.Contains("Nascimento") && e.Contains("especificador"));
+    }
+
+    [Fact]
+    public void Validar_AceitaFormatoDeDataValido()
+    {
+        var parametros = JsonDocument.Parse("""{"formato":"yyyy-MM-dd"}""").RootElement;
+        var requisicao = new LayoutRequest("PESSOA1", "Pessoa", ";", new[]
+        {
+            new CampoRequest("Nascimento", new[] { new RegraCampoRequest("Data", parametros) })
+        });
+
+        Assert.Empty(ValidadorDeDefinicaoDeLayout.Validar(requisicao, _catalogo));
+    }
+
+    [Fact]
+    public void Validar_RejeitaDataEntreComMinimoOuMaximoForaDoFormato()
+    {
+        var parametros = JsonDocument.Parse("""{"minimo":"data-invalida","maximo":"31/12/2024"}""").RootElement;
+        var requisicao = new LayoutRequest("PESSOA1", "Pessoa", ";", new[]
+        {
+            new CampoRequest("Nascimento", new[] { new RegraCampoRequest("DataEntre", parametros) })
+        });
+
+        var erros = ValidadorDeDefinicaoDeLayout.Validar(requisicao, _catalogo);
+
+        Assert.Contains(erros, e => e.Contains("minimo"));
+        Assert.DoesNotContain(erros, e => e.Contains("'maximo'"));
+    }
 }

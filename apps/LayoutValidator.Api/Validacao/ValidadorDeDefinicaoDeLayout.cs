@@ -1,7 +1,9 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using LayoutValidator.Api.Contratos;
 using LayoutValidator.Api.Regras;
+using LayoutValidator.Regras;
 
 namespace LayoutValidator.Api.Validacao;
 
@@ -83,6 +85,59 @@ public static class ValidadorDeDefinicaoDeLayout
             catch (ArgumentException)
             {
                 erros.Add($"Campo '{campo.Nome}': regra 'Formato' tem expressão regular inválida.");
+            }
+        }
+
+        // "Data"/"DataEntre"/"DataNoPassado" aceitam um "formato" .NET opcional vindo do
+        // cadastro — sem checagem, algo como "22222222222" (nenhum especificador de data real)
+        // passava batido e deixava a regra sempre reprovando qualquer valor, silenciosamente.
+        // minimo/maximo de "DataEntre" são interpretados com esse mesmo formato, então também
+        // precisam bater com ele — senão têm o mesmo problema (sempre reprova, sem avisar).
+        if (regraCampo.ChaveRegra is "Data" or "DataEntre" or "DataNoPassado"
+            && regraCampo.ParametrosJson is { ValueKind: JsonValueKind.Object } parametrosDeData)
+        {
+            ValidarRegraDeData(campo, regraCampo.ChaveRegra, parametrosDeData, erros);
+        }
+    }
+
+    private static void ValidarRegraDeData(CampoRequest campo, string chaveRegra, JsonElement parametros, List<string> erros)
+    {
+        var formato = RegrasDataExtensions.FormatoBrasileiro;
+
+        if (parametros.TryGetProperty("formato", out var formatoElemento)
+            && formatoElemento.ValueKind == JsonValueKind.String
+            && !string.IsNullOrWhiteSpace(formatoElemento.GetString()))
+        {
+            formato = formatoElemento.GetString()!;
+
+            if (!formato.Any(c => c is 'y' or 'M' or 'd'))
+            {
+                erros.Add($"Campo '{campo.Nome}': regra '{chaveRegra}' tem 'formato' inválido — precisa " +
+                          "conter ao menos um especificador de data (y, M ou d). Ex.: dd/MM/yyyy.");
+                return;
+            }
+
+            try
+            {
+                _ = DateTime.Now.ToString(formato, CultureInfo.InvariantCulture);
+            }
+            catch (FormatException)
+            {
+                erros.Add($"Campo '{campo.Nome}': regra '{chaveRegra}' tem 'formato' com sintaxe inválida.");
+                return;
+            }
+        }
+
+        if (chaveRegra != "DataEntre")
+            return;
+
+        foreach (var nomeParametro in new[] { "minimo", "maximo" })
+        {
+            if (parametros.TryGetProperty(nomeParametro, out var valorElemento)
+                && valorElemento.ValueKind == JsonValueKind.String
+                && !DateTime.TryParseExact(valorElemento.GetString(), formato, CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
+            {
+                erros.Add($"Campo '{campo.Nome}': regra 'DataEntre' tem '{nomeParametro}' que não é uma data válida no formato '{formato}'.");
             }
         }
     }
