@@ -96,6 +96,43 @@ O código de erro é o que vira `NomeRegra` no `ErroValidacaoLayout` e o que o
 | `ValorEm("S", "N")` | `ValorForaDoDominio` | domínio fechado, ignorando caixa |
 | `Formato(regex, codigo, mensagem)` | o que você passar | escape hatch pra regra pontual |
 
+#### Exemplo: limitando o comprimento
+
+O RG do layout `Funcionario` aceita de 7 a 9 dígitos:
+
+```csharp
+RuleFor(f => f.Rg).Obrigatorio().SomenteDigitos().ComprimentoEntre(7, 9);
+```
+
+Com `398073043`, `12` e `1234567890` nas linhas 2, 3 e 4 do arquivo, a primeira passa e as
+outras duas saem assim no `relatorio_erros.csv`:
+
+```
+NumeroLinha;NomeCampo;ValorRaw;NomeRegra;Mensagem
+3;Rg;12;ComprimentoInvalido;'Rg' deve ter entre 7 e 9 caracteres.
+4;Rg;1234567890;ComprimentoInvalido;'Rg' deve ter entre 7 e 9 caracteres.
+```
+
+Por causa do `CascadeMode.Stop`, a ordem da cadeia decide o motivo. Um valor `12a`
+reprova em `SomenteDigitosInvalido` e nem chega a ser medido.
+
+**O que conta como caractere.** A medida é o `string.Length` do .NET, em unidades UTF-16,
+e não o que a pessoa enxerga na tela. Pra dígitos e texto comum, incluindo acento, as duas
+contagens batem. Divergem em três casos:
+
+| Valor | Visível | Contado |
+|---|---|---|
+| `José` com acento decomposto ([NFD](https://unicode.org/reports/tr15/), comum em texto vindo do macOS) | 4 | 5 |
+| `😀` | 1 | 2 |
+| `👨‍👩‍👧` | 1 | 8 |
+
+É proposital: o limite de comprimento quase sempre existe pro valor caber numa coluna, e
+`nvarchar(n)` do SQL Server conta exatamente assim. Contar o que se vê deixaria passar
+`👨‍👩‍👧` num campo de 1 caractere, e a gravação falharia depois de a regra aprovar. Se
+o destino conta de outro jeito (PostgreSQL conta code points, `VARCHAR2(n BYTE)` do
+Oracle conta bytes), ajuste o limite ou escreva a regra com `Formato`/`Must`. O valor chega
+na regra como veio no arquivo, sem normalização.
+
 ### Numéricas
 
 | Regra | Código de erro | O que aceita |
