@@ -23,13 +23,32 @@ arquitetura — `IValidadorLayout<T>`, `AbstractValidator<TRaw>`, `ResumoValidac
 `ErrorReportWriter` — é agnóstico a como o parsing acontece, então dava pra
 reaproveitar quase tudo, só trocando a peça que lê o arquivo raw.
 
-## Processamento assíncrono (`IAsyncEnumerable`)
+## Processamento assíncrono / paralelo
 
-A versão atual é síncrona porque leitura de arquivo local linha a linha já é rápida o
-suficiente (1M linhas em ~6-7s no teste com o layout de 22 campos). Se um dia isso
-rodar contra um stream de rede (blob storage, SFTP remoto) onde I/O é o gargalo, faz
-sentido um `LayoutValidationEngine.ValidarAsync` retornando `IAsyncEnumerable<T>` — a
-CsvHelper já suporta `GetRecordsAsync`.
+Avaliado e **descartado por ora** (set/2026). Medição com 1M linhas do layout
+`Funcionario` (22 campos), em máquina de 16 núcleos:
+
+| Etapa | Tempo |
+|---|---|
+| Leitura do disco | 0,24 s |
+| Parse (CsvHelper) | ~1,8 s |
+| Validação + mapeamento | ~2,8 s |
+| Resumo + relatório | ~0,7 s |
+| **Total** | **5,5 s** |
+
+- **`async/await` não ajuda:** o trabalho é quase todo CPU, e o I/O de arquivo local é
+  desprezível.
+- **Paralelizar a validação** (parse numa thread, lotes validados em paralelo, saída
+  reordenada por um `Channel`) dá o mesmo resultado, com relatório byte a byte idêntico,
+  e cai para ~3,6 s (~1,5x). Não passa disso com mais núcleos: o parse é serial e custa
+  ~2,1 s sozinho. PLINQ `AsOrdered` foi pior: ~6 s e até 1,3 GB de memória.
+- Não compensa hoje: exigiria validador e mapper thread-safe, uma API nova e tratamento
+  de exceção e cancelamento nos workers, para economizar ~2 s por milhão de linhas.
+
+Quando reabrir: regras bem mais pesadas (que mudem a proporção parse × validação) ou
+leitura de stream de rede (blob, SFTP), onde aí sim cabe um `ValidarAsync` com
+`IAsyncEnumerable<T>`, já que o CsvHelper tem `ReadAsync`. Em uso real, o ganho mais
+provável está no consumidor, por exemplo gravar os válidos no banco em lote.
 
 ## Mapeamento automático via reflection
 

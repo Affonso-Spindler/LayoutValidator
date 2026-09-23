@@ -350,9 +350,9 @@ npm --prefix apps/LayoutValidator.Web start
   decodificar o stream — depois de decodificado com o encoding errado, os caracteres
   corrompidos já viraram `?`/lixo e o erro original se perde.
 - **Layout posicional/largura fixa**: não suportado, só delimitado.
-- **Async (`IAsyncEnumerable`)**: extensão natural depois que a versão síncrona estiver
-  validada em produção — não necessária agora porque leitura de arquivo local linha a
-  linha já é rápida o suficiente de forma síncrona.
+- **Async / paralelo**: avaliado e descartado por ora. O trabalho é CPU, não I/O, e
+  paralelizar a validação rende só ~1,5x (5,5 s para ~3,6 s por milhão de linhas),
+  porque o parse é serial. Medição em [Possibilidades](wiki/Possibilidades.md#processamento-assíncrono--paralelo).
 - **Mapper automático via reflection**: começar manual foi decisão consciente (mais
   simples e explícito); pode valer a pena mais adiante se o número de layouts crescer
   muito.
