@@ -39,6 +39,7 @@ samples/LayoutValidator.Sample/          exemplo mínimo — layout "Pessoa" (4 
 tests/LayoutValidator.Tests/             testes xUnit do motor de validação
 tests/LayoutValidator.Regras.Tests/      testes xUnit do catálogo de regras
 apps/LayoutValidator.LayoutFuncionario/  layout de referência maior — "Funcionário" (22 campos)
+tests/LayoutValidator.LayoutFuncionario.Tests/  testes xUnit do layout Funcionário
 apps/LayoutValidator.GeradorDados/       gera arquivo CSV de teste com erros diversos
 apps/LayoutValidator.TesteApp/           app WinForms pra validar qualquer .csv/.txt na mão
 apps/LayoutValidator.Api/                API local: cadastra layout em banco, valida por HTTP

@@ -78,6 +78,40 @@ codigo, mensagem)` é a saída — como no `Codigo` acima. O código de erro que
 que vira `NomeRegra` no `ErroValidacaoLayout` e o que o `ResumoValidacaoLayout` agrupa em
 `ErrosPorRegra`, então escolha um nome estável.
 
+### Regra entre campos
+
+Quando o que se exige de um campo depende do valor de outro, a regra fica no campo validado
+e usa `.When(...)` para ler o outro. Exemplo real do layout `Funcionario`: o registro só é
+válido com `Ativo = N` e `DataDemissao` preenchida, ou `Ativo = S` e `DataDemissao` vazia.
+
+| Ativo | DataDemissao | Resultado |
+|---|---|---|
+| S | vazia | passa |
+| S | preenchida | `DataDemissaoEmFuncionarioAtivo` |
+| N | preenchida | passa |
+| N | vazia | `CampoObrigatorio` |
+
+```csharp
+RuleFor(f => f.DataDemissao)
+    .Obrigatorio().When(f => f.Ativo == "N", ApplyConditionTo.CurrentValidator)
+    .Empty().When(f => f.Ativo == "S", ApplyConditionTo.CurrentValidator)
+        .WithErrorCode("DataDemissaoEmFuncionarioAtivo")
+        .WithMessage("'DataDemissao' deve ficar vazia quando Ativo = S.")
+    .Data();
+```
+
+Olhando cada campo sozinho, as quatro combinações estão certas. O erro só aparece na
+combinação, por isso precisa de uma regra que leia os dois. Duas pegadinhas:
+
+- **`.When()` sem `ApplyConditionTo.CurrentValidator` desliga a cadeia inteira**, não só a
+  regra ao lado, porque o default é `AllValidators`. No exemplo, `.Data().When(...)` no fim
+  faria uma data inválida passar calada sempre que a condição fosse falsa.
+- **Regra no objeto inteiro (`RuleFor(f => f).Must(...)`) sai com `NomeCampo` vazio** no
+  relatório e no `ErrosPorCampo`. Prefira a regra no campo, como acima; se não der,
+  termine a cadeia com `.WithName("NomeDoCampo")`.
+
+As duas estão cobertas em `RegrasCondicionaisTestes`, no projeto de testes do catálogo.
+
 ## 3. `Produto` — o Model final
 
 ```csharp

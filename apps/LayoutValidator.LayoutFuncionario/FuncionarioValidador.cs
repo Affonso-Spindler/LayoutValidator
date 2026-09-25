@@ -33,9 +33,16 @@ public sealed class FuncionarioValidador : AbstractValidator<FuncionarioRaw>
 
         RuleFor(f => f.DataAdmissao).Obrigatorio().Data();
 
-        // Sem Obrigatorio: campo opcional é só declarar o formato — regra de formato
-        // deixa passar valor vazio de propósito.
-        RuleFor(f => f.DataDemissao).Data();
+        // Regra entre campos: só vale Ativo = N com data, ou Ativo = S sem data. Cada When
+        // condiciona só a regra ao lado (CurrentValidator) — sem isso a condição desligaria
+        // também o Data(), e uma data inválida passaria calada. Comparação exata, igual à do
+        // FuncionarioMapper: as duas precisam mudar juntas.
+        RuleFor(f => f.DataDemissao)
+            .Obrigatorio().When(f => f.Ativo == "N", ApplyConditionTo.CurrentValidator)
+            .Empty().When(f => f.Ativo == "S", ApplyConditionTo.CurrentValidator)
+                .WithErrorCode("DataDemissaoEmFuncionarioAtivo")
+                .WithMessage("'DataDemissao' deve ficar vazia quando Ativo = S.")
+            .Data();
 
         RuleFor(f => f.Ativo).Obrigatorio().ValorEm("S", "N");
 

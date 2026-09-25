@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LayoutValidator.Api", "apps
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LayoutValidator.Api.Tests", "tests\LayoutValidator.Api.Tests\LayoutValidator.Api.Tests.csproj", "{A5246D2C-E62B-4692-AF0B-309CDD1A6664}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LayoutValidator.LayoutFuncionario.Tests", "tests\LayoutValidator.LayoutFuncionario.Tests\LayoutValidator.LayoutFuncionario.Tests.csproj", "{5A5124A1-202D-44D5-A1D4-64257A4C74DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -80,6 +82,10 @@ Global
 		{A5246D2C-E62B-4692-AF0B-309CDD1A6664}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A5246D2C-E62B-4692-AF0B-309CDD1A6664}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A5246D2C-E62B-4692-AF0B-309CDD1A6664}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A5124A1-202D-44D5-A1D4-64257A4C74DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A5124A1-202D-44D5-A1D4-64257A4C74DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A5124A1-202D-44D5-A1D4-64257A4C74DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A5124A1-202D-44D5-A1D4-64257A4C74DE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{9DB539B6-D0AF-4764-BECB-4795E1656A47} = {ADB393C2-876D-4547-A6BD-699760EFE972}
@@ -92,5 +98,6 @@ Global
 		{B3222DB5-BB26-4C63-86EF-FE01896365F4} = {2E6AEC00-A810-4C9A-8654-71489A47E3BE}
 		{FF0518AA-4F56-4A00-984E-A8B54D8DF65C} = {939CA144-8E0E-4E83-B947-E7099F9AAF1E}
 		{A5246D2C-E62B-4692-AF0B-309CDD1A6664} = {2E6AEC00-A810-4C9A-8654-71489A47E3BE}
+		{5A5124A1-202D-44D5-A1D4-64257A4C74DE} = {2E6AEC00-A810-4C9A-8654-71489A47E3BE}
 	EndGlobalSection
 EndGlobal

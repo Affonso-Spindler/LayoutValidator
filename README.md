@@ -281,7 +281,8 @@ LayoutValidator.sln
     ResumoValidacaoLayoutTestes.cs
   tests/LayoutValidator.Regras.Tests/      xUnit do catálogo
     Predicados/                            vetores de teste dos predicados puros
-    Extensions/                            contrato de vazio, códigos de erro, CascadeMode
+    Extensions/                            contrato de vazio, códigos de erro, CascadeMode, regra entre campos
+  tests/LayoutValidator.LayoutFuncionario.Tests/  xUnit do layout Funcionario (regra Ativo x DataDemissao)
   apps/LayoutValidator.LayoutFuncionario/  layout de referência maior (22 campos), compartilhado pelos apps abaixo
   apps/LayoutValidator.GeradorDados/       console app: gera CSV de teste com erros diversos injetados
   apps/LayoutValidator.TesteApp/           WinForms: seleciona um arquivo e mostra o resultado da validação
