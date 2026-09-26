@@ -93,8 +93,15 @@ O código de erro é o que vira `NomeRegra` no `ErroValidacaoLayout` e o que o
 | `SomenteMaiusculas()` | `SomenteMaiusculasInvalido` | nenhuma minúscula; dígito e pontuação não interferem |
 | `SomenteMinusculas()` | `SomenteMinusculasInvalido` | nenhuma maiúscula; dígito e pontuação não interferem |
 | `SemEspacoNasBordas()` | `EspacoNasBordas` | sem espaço/tab/`\r` grudado no começo ou no fim |
-| `ValorEm("S", "N")` | `ValorForaDoDominio` | domínio fechado, ignorando caixa |
+| `ValorEm("S", "N")` | `ValorForaDoDominio` | domínio fechado; aceita minúsculas (`s`), ver nota abaixo |
 | `Formato(regex, codigo, mensagem)` | o que você passar | escape hatch pra regra pontual |
+
+**Maiúsculas e minúsculas.** `ValorEm` e `Uf` aceitam minúsculas: `s` passa em
+`ValorEm("S", "N")` e `sp` passa em `Uf()`. A regra não converte o valor, então **o mapper
+do layout deve tratar maiúscula e minúscula como iguais**, por exemplo com
+`string.Equals(..., StringComparison.OrdinalIgnoreCase)` ou `ToUpperInvariant()`. Ver
+[Criando Layouts § 4](Criando-Layouts.md#4-produtomapper--a-conversão). Hoje não existe
+modo que diferencie maiúscula de minúscula.
 
 #### Exemplo: limitando o comprimento
 
@@ -183,7 +190,7 @@ número de casas, e `1234,5` num campo declarado com 2 casas é defeito.
 | `Cnpj()` | `CnpjInvalido` | 14 dígitos, **sem máscara**, dígito verificador correto |
 | `CpfOuCnpj()` | `CpfOuCnpjInvalido` | um ou outro — coluna única de documento |
 | `Cep()` | `CepInvalido` | `00000-000` ou `00000000` |
-| `Uf()` | `UfInvalida` | as 27 siglas reais, ignorando caixa — `CC` reprova |
+| `Uf()` | `UfInvalida` | as 27 siglas reais; aceita minúsculas (`sp`) — `CC` reprova |
 | `Telefone()` | `TelefoneInvalido` | `(00) 00000-0000`, `(00) 0000-0000`, ou só os 10/11 dígitos |
 | `Cnh()` | `CnhInvalida` | 11 dígitos com dígito verificador correto |
 | `PisPasep()` | `PisPasepInvalido` | 11 dígitos com dígito verificador correto |

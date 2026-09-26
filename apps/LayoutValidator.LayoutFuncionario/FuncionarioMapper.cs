@@ -19,14 +19,16 @@ public sealed class FuncionarioMapper : ILayoutMapper<FuncionarioRaw, Funcionari
         Salario = ParseDecimal(raw.Salario),
         DataAdmissao = ParseData(raw.DataAdmissao),
         DataDemissao = string.IsNullOrEmpty(raw.DataDemissao) ? null : ParseData(raw.DataDemissao),
-        Ativo = raw.Ativo == "S",
+        // ValorEm("S", "N") e Uf() aceitam minúsculas, então aqui "s" vale "S" e a UF é
+        // gravada em maiúsculo: quem aceita na validação, converte no mapper.
+        Ativo = string.Equals(raw.Ativo, "S", StringComparison.OrdinalIgnoreCase),
         Cep = raw.Cep,
         Endereco = raw.Endereco,
         NumeroEndereco = int.Parse(raw.NumeroEndereco),
         Complemento = string.IsNullOrEmpty(raw.Complemento) ? null : raw.Complemento,
         Bairro = raw.Bairro,
         Cidade = raw.Cidade,
-        Uf = raw.Uf,
+        Uf = raw.Uf.ToUpperInvariant(),
         CargaHoraria = int.Parse(raw.CargaHoraria),
         PercentualComissao = string.IsNullOrEmpty(raw.PercentualComissao) ? 0m : ParseDecimal(raw.PercentualComissao)
     };

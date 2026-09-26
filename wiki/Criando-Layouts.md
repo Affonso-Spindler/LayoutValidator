@@ -93,11 +93,15 @@ válido com `Ativo = N` e `DataDemissao` preenchida, ou `Ativo = S` e `DataDemis
 
 ```csharp
 RuleFor(f => f.DataDemissao)
-    .Obrigatorio().When(f => f.Ativo == "N", ApplyConditionTo.CurrentValidator)
-    .Empty().When(f => f.Ativo == "S", ApplyConditionTo.CurrentValidator)
+    .Obrigatorio().When(f => AtivoIgual(f, "N"), ApplyConditionTo.CurrentValidator)
+    .Empty().When(f => AtivoIgual(f, "S"), ApplyConditionTo.CurrentValidator)
         .WithErrorCode("DataDemissaoEmFuncionarioAtivo")
         .WithMessage("'DataDemissao' deve ficar vazia quando Ativo = S.")
     .Data();
+
+// ValorEm("S", "N") aceita "s" e "n", então a condição compara do mesmo jeito.
+static bool AtivoIgual(FuncionarioRaw f, string valor) =>
+    string.Equals(f.Ativo, valor, StringComparison.OrdinalIgnoreCase);
 ```
 
 Olhando cada campo sozinho, as quatro combinações estão certas. O erro só aparece na
@@ -142,6 +146,20 @@ public sealed class ProdutoMapper : ILayoutMapper<ProdutoRaw, Produto>
     };
 }
 ```
+
+**Quem aceita na validação, converte no mapper.** A validação só diz se o valor é
+aceitável: ela nunca altera o valor. Se uma regra aceita variações, o mapper precisa
+tratar todas do mesmo jeito. O caso mais comum é maiúscula e minúscula: `ValorEm("S", "N")`
+e `Uf()` aceitam `s` e `sp`. No layout `Funcionario`:
+
+```csharp
+Ativo = string.Equals(raw.Ativo, "S", StringComparison.OrdinalIgnoreCase), // "s" também é ativo
+Uf = raw.Uf.ToUpperInvariant(),                                           // "sp" grava "SP"
+```
+
+Sem isso, `raw.Ativo == "S"` gravaria um `s` aprovado na validação como inativo, sem
+nenhum erro no relatório. O mesmo vale para condições de regra entre campos que leiam
+esses valores.
 
 ## 5. `ProdutoValidadorLayout` — a fachada
 

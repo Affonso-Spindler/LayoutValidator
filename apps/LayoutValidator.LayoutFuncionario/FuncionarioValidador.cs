@@ -35,11 +35,11 @@ public sealed class FuncionarioValidador : AbstractValidator<FuncionarioRaw>
 
         // Regra entre campos: só vale Ativo = N com data, ou Ativo = S sem data. Cada When
         // condiciona só a regra ao lado (CurrentValidator) — sem isso a condição desligaria
-        // também o Data(), e uma data inválida passaria calada. Comparação exata, igual à do
-        // FuncionarioMapper: as duas precisam mudar juntas.
+        // também o Data(), e uma data inválida passaria calada. A comparação ignora maiúsculas
+        // e minúsculas porque o ValorEm do Ativo aceita "s" e "n" — o mesmo vale no mapper.
         RuleFor(f => f.DataDemissao)
-            .Obrigatorio().When(f => f.Ativo == "N", ApplyConditionTo.CurrentValidator)
-            .Empty().When(f => f.Ativo == "S", ApplyConditionTo.CurrentValidator)
+            .Obrigatorio().When(f => AtivoIgual(f, "N"), ApplyConditionTo.CurrentValidator)
+            .Empty().When(f => AtivoIgual(f, "S"), ApplyConditionTo.CurrentValidator)
                 .WithErrorCode("DataDemissaoEmFuncionarioAtivo")
                 .WithMessage("'DataDemissao' deve ficar vazia quando Ativo = S.")
             .Data();
@@ -62,4 +62,7 @@ public sealed class FuncionarioValidador : AbstractValidator<FuncionarioRaw>
 
         RuleFor(f => f.PercentualComissao).Percentual();
     }
+
+    private static bool AtivoIgual(FuncionarioRaw funcionario, string valor) =>
+        string.Equals(funcionario.Ativo, valor, StringComparison.OrdinalIgnoreCase);
 }

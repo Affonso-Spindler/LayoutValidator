@@ -39,16 +39,22 @@ public class RegraAtivoDataDemissaoTestes
     [Theory]
     [InlineData("S", "")]
     [InlineData("N", DataValida)]
+    [InlineData("s", "")]
+    [InlineData("n", DataValida)]
     public void CombinacaoCoerente_Passa(string ativo, string dataDemissao)
     {
         Assert.Empty(Validador.Validate(Funcionario(ativo, dataDemissao)).Errors);
     }
 
+    // Minúsculas também disparam: ValorEm("S", "N") aceita "s" e "n", então a regra entre
+    // campos precisa enxergar os dois do mesmo jeito.
     [Theory]
     [InlineData("S", DataValida, "DataDemissaoEmFuncionarioAtivo")]
     [InlineData("S", DataInvalida, "DataDemissaoEmFuncionarioAtivo")]
     [InlineData("N", "", "CampoObrigatorio")]
     [InlineData("N", DataInvalida, "DataInvalida")]
+    [InlineData("s", DataValida, "DataDemissaoEmFuncionarioAtivo")]
+    [InlineData("n", "", "CampoObrigatorio")]
     public void CombinacaoIncoerente_ReprovaNaDataDemissao(string ativo, string dataDemissao, string codigoEsperado)
     {
         var erro = Assert.Single(Validador.Validate(Funcionario(ativo, dataDemissao)).Errors);
